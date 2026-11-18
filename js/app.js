@@ -10,7 +10,7 @@ const SUITE_ENV = {
     runtimeEnv.NEXT_PUBLIC_ADMIN_URL || 'https://geotransformer-admin-panel.onrender.com',
   NEXT_PUBLIC_APK_DOWNLOAD_URL:
     runtimeEnv.NEXT_PUBLIC_APK_DOWNLOAD_URL ||
-    'https://geogis6-android.onrender.com/GeoGis6_Android.apk',
+    'https://github.com/akey01/GeoGis_Android/releases/latest/download/GeoGis6_Android.apk',
 };
 
 const desktopHost = SUITE_ENV.NEXT_PUBLIC_DESKTOP_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');

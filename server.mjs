@@ -32,7 +32,7 @@ const PUBLIC_ENV = {
     process.env.NEXT_PUBLIC_ADMIN_URL || 'https://geotransformer-admin-panel.onrender.com',
   NEXT_PUBLIC_APK_DOWNLOAD_URL:
     process.env.NEXT_PUBLIC_APK_DOWNLOAD_URL ||
-    'https://geogis6-android.onrender.com/GeoGis6_Android.apk',
+    'https://github.com/akey01/GeoGis_Android/releases/latest/download/GeoGis6_Android.apk',
 };
 
 const MIME_TYPES = {
