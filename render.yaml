@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: geogis6-web
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.17.0
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_DESKTOP_URL
+        value: https://geotransformer-monolith-fniu.onrender.com
+      - key: NEXT_PUBLIC_ADMIN_URL
+        value: https://geotransformer-admin-panel.onrender.com
+      - key: NEXT_PUBLIC_APK_DOWNLOAD_URL
+        value: https://geogis6-android.onrender.com/GeoGis6_Android.apk

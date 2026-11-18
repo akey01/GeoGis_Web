@@ -7,9 +7,10 @@ const SUITE_ENV = {
   NEXT_PUBLIC_DESKTOP_URL:
     runtimeEnv.NEXT_PUBLIC_DESKTOP_URL || 'https://geotransformer-monolith-fniu.onrender.com',
   NEXT_PUBLIC_ADMIN_URL:
-    runtimeEnv.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:4000',
+    runtimeEnv.NEXT_PUBLIC_ADMIN_URL || 'https://geotransformer-admin-panel.onrender.com',
   NEXT_PUBLIC_APK_DOWNLOAD_URL:
-    runtimeEnv.NEXT_PUBLIC_APK_DOWNLOAD_URL || '/downloads/GeoGis6_Android.apk',
+    runtimeEnv.NEXT_PUBLIC_APK_DOWNLOAD_URL ||
+    'https://geogis6-android.onrender.com/GeoGis6_Android.apk',
 };
 
 const desktopHost = SUITE_ENV.NEXT_PUBLIC_DESKTOP_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');

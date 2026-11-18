@@ -29,9 +29,10 @@ const PUBLIC_ENV = {
   NEXT_PUBLIC_DESKTOP_URL:
     process.env.NEXT_PUBLIC_DESKTOP_URL || 'https://geotransformer-monolith-fniu.onrender.com',
   NEXT_PUBLIC_ADMIN_URL:
-    process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:4000',
+    process.env.NEXT_PUBLIC_ADMIN_URL || 'https://geotransformer-admin-panel.onrender.com',
   NEXT_PUBLIC_APK_DOWNLOAD_URL:
-    process.env.NEXT_PUBLIC_APK_DOWNLOAD_URL || '/downloads/GeoGis6_Android.apk',
+    process.env.NEXT_PUBLIC_APK_DOWNLOAD_URL ||
+    'https://geogis6-android.onrender.com/GeoGis6_Android.apk',
 };
 
 const MIME_TYPES = {
