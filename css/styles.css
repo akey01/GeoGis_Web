@@ -1,0 +1,394 @@
+:root {
+  --bg-main: #070B14;
+  --bg-surface: #0F172A;
+  --bg-surface-alpha: rgba(15, 23, 42, 0.78);
+  --border-subtle: rgba(56, 189, 248, 0.15);
+  --border-emerald: rgba(16, 185, 129, 0.35);
+  --border-cyan: rgba(6, 182, 212, 0.35);
+  --accent-emerald: #10B981;
+  --accent-cyan: #06B6D4;
+  --accent-amber: #F59E0B;
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Topographic contour & coordinate grid backdrop */
+.topo-backdrop {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.08), transparent 45%),
+    radial-gradient(circle at 85% 25%, rgba(6, 182, 212, 0.08), transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(245, 158, 11, 0.05), transparent 50%),
+    linear-gradient(to right, rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 64px 64px, 64px 64px;
+}
+
+.topo-contours-svg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.14;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono-tech {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Technical Glass Card with Survey Crosshairs */
+.tech-card {
+  position: relative;
+  background: var(--bg-surface-alpha);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.tech-card:hover {
+  border-color: rgba(6, 182, 212, 0.38);
+  box-shadow: 0 20px 50px -20px rgba(6, 182, 212, 0.22);
+}
+
+.crosshair-corners {
+  position: relative;
+}
+
+.crosshair-corners::before,
+.crosshair-corners::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.crosshair-corners::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--accent-emerald);
+  border-left: 2px solid var(--accent-emerald);
+  border-top-left-radius: 4px;
+}
+
+.crosshair-corners::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--accent-cyan);
+  border-right: 2px solid var(--accent-cyan);
+  border-bottom-right-radius: 4px;
+}
+
+.crosshair-tr-bl::before,
+.crosshair-tr-bl::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.crosshair-tr-bl::before {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid rgba(16, 185, 129, 0.55);
+  border-right: 2px solid rgba(16, 185, 129, 0.55);
+}
+
+.crosshair-tr-bl::after {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid rgba(6, 182, 212, 0.55);
+  border-left: 2px solid rgba(6, 182, 212, 0.55);
+}
+
+/* Telemetry Status Pill */
+.telemetry-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #A7F3D0;
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background-color: var(--accent-emerald);
+  box-shadow: 0 0 10px var(--accent-emerald);
+  animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.25);
+  }
+}
+
+/* Desktop Browser Frame Mockup */
+.desktop-frame {
+  border-radius: 1rem;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  background: #0B1120;
+  box-shadow:
+    0 30px 80px -20px rgba(0, 0, 0, 0.85),
+    0 0 40px -15px rgba(6, 182, 212, 0.25);
+  overflow: hidden;
+}
+
+.desktop-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: rgba(15, 23, 42, 0.96);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.14);
+}
+
+.window-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.window-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  display: inline-block;
+}
+
+.browser-url-bar {
+  flex: 1;
+  max-width: 460px;
+  padding: 0.28rem 0.85rem;
+  border-radius: 0.45rem;
+  background: rgba(7, 11, 20, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: #94A3B8;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Rugged Field Mobile Phone Frame Mockup */
+.phone-chassis {
+  position: relative;
+  width: 100%;
+  max-width: 310px;
+  margin: 0 auto;
+  padding: 26px 11px 14px;
+  border-radius: 2.5rem;
+  background: linear-gradient(145deg, #1E293B 0%, #090D16 60%, #1E293B 100%);
+  border: 2px solid rgba(148, 163, 184, 0.28);
+  box-shadow:
+    0 30px 70px -18px rgba(0, 0, 0, 0.9),
+    0 0 35px -10px rgba(16, 185, 129, 0.25),
+    inset 0 0 0 2px rgba(2, 6, 23, 0.9);
+}
+
+.phone-chassis::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #0F172A;
+  z-index: 10;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.phone-screen {
+  border-radius: 1.65rem;
+  overflow: hidden;
+  background: #070B14;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  position: relative;
+}
+
+.phone-screen img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Screenshot Zoom Hover Indicator */
+.shot-trigger {
+  position: relative;
+  cursor: zoom-in;
+  display: block;
+  width: 100%;
+}
+
+.shot-zoom-badge {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  background: rgba(7, 11, 20, 0.86);
+  border: 1px solid rgba(6, 182, 212, 0.45);
+  color: #E2E8F0;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.shot-trigger:hover .shot-zoom-badge {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Simulator Inputs */
+.sim-input {
+  width: 100%;
+  background: rgba(7, 11, 20, 0.88);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  color: #34D399;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sim-input:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+}
+
+/* Active Tab Button */
+.tab-btn {
+  transition: all 0.2s ease;
+}
+
+.tab-btn[data-active='true'] {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(6, 182, 212, 0.2));
+  border-color: rgba(16, 185, 129, 0.65);
+  color: #F8FAFC;
+  box-shadow: 0 0 20px -6px rgba(16, 185, 129, 0.55);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070B14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Lightbox Modal */
+.lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(2, 6, 23, 0.92);
+  backdrop-filter: blur(10px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.lightbox-backdrop.open {
+  display: flex;
+}
+
+/* Subtle scanning laser animation inside simulator or radar */
+.laser-scan {
+  position: relative;
+  overflow: hidden;
+}
+
+.laser-scan::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.7), rgba(6, 182, 212, 0.8), transparent);
+  animation: scanLine 5s linear infinite;
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+@keyframes scanLine {
+  0% { top: -2%; }
+  100% { top: 102%; }
+}

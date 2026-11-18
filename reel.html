@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoGIS6 — TikTok Reel Studio (9:16 Full HD)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23070B14'/%3E%3Cellipse cx='16' cy='16' rx='11' ry='7' fill='none' stroke='%2310B981' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%2306B6D4'/%3E%3C/svg%3E"
+  />
+  <style>
+    :root {
+      --bg: #070B14;
+      --surface: #0F172A;
+      --emerald: #10B981;
+      --cyan: #06B6D4;
+      --amber: #F59E0B;
+      --font-display: 'Space Grotesk', system-ui, sans-serif;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: #F8FAFC;
+      font-family: var(--font-sans);
+      min-height: 100vh;
+    }
+
+    body.render-mode {
+      overflow: hidden;
+      width: 1080px;
+      height: 1920px;
+      background: #070B14;
+    }
+
+    body.render-mode .studio-chrome {
+      display: none !important;
+    }
+
+    body.render-mode .stage-viewport-wrap {
+      padding: 0 !important;
+      margin: 0 !important;
+      display: block !important;
+      width: 1080px !important;
+      height: 1920px !important;
+    }
+
+    body.render-mode #reel-scaler {
+      width: 1080px !important;
+      height: 1920px !important;
+      border-radius: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    body.render-mode #reel-stage {
+      transform: none !important;
+    }
+
+    /* Studio Layout */
+    .studio-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(7, 11, 20, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.16);
+      padding: 14px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .studio-grid {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    @media (min-width: 980px) {
+      .studio-grid {
+        grid-template-columns: 440px 1fr;
+      }
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1px solid transparent;
+      transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: linear-gradient(135deg, #10B981, #06B6D4);
+      color: #030712;
+    }
+    .btn-secondary {
+      background: rgba(15, 23, 42, 0.9);
+      border-color: rgba(56, 189, 248, 0.3);
+      color: #E2E8F0;
+    }
+    .btn-active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #10B981;
+      color: #A7F3D0;
+    }
+
+    /* 9:16 Stage Wrapper in Browser Preview */
+    .stage-preview-shell {
+      position: relative;
+      width: 380px;
+      height: 675.5px;
+      margin: 0 auto;
+      border-radius: 28px;
+      overflow: hidden;
+      border: 2px solid rgba(56, 189, 248, 0.3);
+      box-shadow: 0 30px 90px -20px rgba(0, 0, 0, 0.85), 0 0 40px -15px rgba(16, 185, 129, 0.35);
+      background: #070B14;
+    }
+
+    @media (max-width: 440px) {
+      .stage-preview-shell {
+        width: 320px;
+        height: 568.8px;
+      }
+    }
+
+    #reel-stage {
+      width: 1080px;
+      height: 1920px;
+      position: relative;
+      overflow: hidden;
+      background: #070B14;
+      transform-origin: top left;
+      user-select: none;
+    }
+
+    /* Stage Backdrop & Grid */
+    .stage-bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 18%, rgba(16, 185, 129, 0.16), transparent 46%),
+        radial-gradient(circle at 82% 76%, rgba(6, 182, 212, 0.16), transparent 48%),
+        linear-gradient(to right, rgba(56, 189, 248, 0.055) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.055) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 72px 72px, 72px 72px;
+    }
+
+    .scene {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      padding: 130px 64px 210px;
+    }
+
+    .pill-tech {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 26px;
+      border-radius: 9999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 2px solid rgba(16, 185, 129, 0.45);
+      font-family: var(--font-mono);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #A7F3D0;
+      align-self: center;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+    }
+
+    .headline-xl {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 76px;
+      line-height: 1.07;
+      text-align: center;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+      text-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+    }
+
+    .headline-lg {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 62px;
+      line-height: 1.1;
+      text-align: center;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+    }
+
+    .accent-emerald { color: #34D399; }
+    .accent-cyan { color: #22D3EE; }
+    .accent-amber { color: #FBBF24; }
+
+    .card-frame {
+      background: rgba(15, 23, 42, 0.88);
+      border: 2px solid rgba(56, 189, 248, 0.35);
+      border-radius: 30px;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.75);
+    }
+
+    .phone-frame-reel {
+      background: linear-gradient(155deg, #1E293B, #070B14);
+      padding: 26px 14px 16px;
+      border-radius: 48px;
+      border: 3px solid rgba(148, 163, 184, 0.35);
+      box-shadow: 0 36px 90px rgba(0, 0, 0, 0.85), 0 0 50px rgba(16, 185, 129, 0.25);
+      position: relative;
+    }
+
+    .phone-frame-reel::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 72px;
+      height: 7px;
+      border-radius: 9999px;
+      background: #0F172A;
+    }
+
+    .phone-frame-reel img {
+      display: block;
+      width: 100%;
+      border-radius: 32px;
+      border: 1px solid rgba(56, 189, 248, 0.22);
+    }
+
+    .stat-badge {
+      padding: 18px 26px;
+      border-radius: 22px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 2px solid rgba(16, 185, 129, 0.4);
+      font-family: var(--font-mono);
+      font-size: 26px;
+      font-weight: 700;
+      color: #F8FAFC;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Persistent Top Progress & Bottom HUD inside Reel */
+    .reel-progress-track {
+      position: absolute;
+      top: 36px;
+      left: 44px;
+      right: 44px;
+      height: 8px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.14);
+      z-index: 30;
+      overflow: hidden;
+    }
+
+    #reel-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10B981, #06B6D4);
+      border-radius: 9999px;
+    }
+
+    .reel-top-hud {
+      position: absolute;
+      top: 62px;
+      left: 44px;
+      right: 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 30;
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: #94A3B8;
+    }
+
+    .reel-bottom-hud {
+      position: absolute;
+      bottom: 64px;
+      left: 48px;
+      right: 130px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      z-index: 30;
+      padding: 18px 24px;
+      border-radius: 20px;
+      background: rgba(7, 11, 20, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      font-family: var(--font-mono);
+      font-size: 22px;
+    }
+
+    /* TikTok Safe Zone Guide (Optional preview toggle) */
+    .tiktok-safezone-guide {
+      position: absolute;
+      inset: 0;
+      z-index: 45;
+      pointer-events: none;
+      display: none;
+    }
+    .tiktok-safezone-guide.visible { display: block; }
+
+    /* Right studio cards */
+    .panel-card {
+      background: rgba(15, 23, 42, 0.82);
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      border-radius: 18px;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Studio Header (Hidden in ?render=1) -->
+  <header class="studio-chrome studio-header">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <a href="index.html" class="btn btn-secondary">← Volver a GeoGIS6 Web</a>
+      <div>
+        <div style="font-family:var(--font-display);font-weight:700;font-size:18px;color:#fff;">
+          GeoGIS6 · TikTok Reel Studio <span style="color:#34D399;font-size:13px;font-family:var(--font-mono);">9:16 (1080×1920)</span>
+        </div>
+        <div style="font-size:12px;color:#94A3B8;font-family:var(--font-mono);">
+          Duración: 21.0s · 6 Escenas Dinámicas + Audio Técnico Sintetizado
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+      <button id="btn-tab-mp4" type="button" class="btn btn-active">🎬 Video MP4 Final</button>
+      <button id="btn-tab-live" type="button" class="btn btn-secondary">⚡ Compositor en Vivo</button>
+      <a
+        href="assets/video/geogis6_tiktok_reel.mp4"
+        download="GeoGIS6_TikTok_Reel_1080x1920.mp4"
+        class="btn btn-primary"
+      >
+        ⬇ Descargar MP4 TikTok
+      </a>
+    </div>
+  </header>
+
+  <main class="studio-grid stage-viewport-wrap">
+    <!-- Left Column: Vertical 9:16 Player / Live Stage -->
+    <div>
+      <!-- MP4 Player View (Default in Browser) -->
+      <div id="mp4-player-wrap" class="studio-chrome">
+        <div class="stage-preview-shell" style="display:flex;align-items:center;justify-content:center;background:#020617;">
+          <video
+            id="mp4-video"
+            src="assets/video/geogis6_tiktok_reel.mp4"
+            controls
+            playsinline
+            loop
+            style="width:100%;height:100%;object-fit:cover;display:block;"
+          ></video>
+        </div>
+        <p style="text-align:center;font-size:12px;color:#94A3B8;margin-top:12px;font-family:var(--font-mono);">
+          Archivo: assets/video/geogis6_tiktok_reel.mp4 · Formato 1080×1920 H.264 + AAC
+        </p>
+      </div>
+
+      <!-- Live Interactive Stage View (Always used in ?render=1) -->
+      <div id="live-stage-wrap" class="stage-viewport-wrap" style="display:none;">
+        <div id="reel-scaler" class="stage-preview-shell">
+          <div id="reel-stage">
+            <div class="stage-bg-grid"></div>
+
+            <!-- Animated SVG Contours & Radar -->
+            <svg id="radar-svg" style="position:absolute;inset:0;width:1080px;height:1920px;opacity:0.35;pointer-events:none;" viewBox="0 0 1080 1920" fill="none">
+              <path d="M-80 340C200 240 480 460 760 320C950 225 1060 280 1160 380" stroke="#10B981" stroke-width="2" stroke-dasharray="10 10"/>
+              <path d="M-60 520C240 420 520 620 820 480C980 405 1060 450 1160 540" stroke="#06B6D4" stroke-width="2"/>
+              <path d="M-80 1420C220 1320 500 1520 800 1380C980 1295 1080 1360 1160 1440" stroke="#10B981" stroke-width="2" stroke-dasharray="8 12"/>
+              <circle cx="540" cy="960" r="410" stroke="#06B6D4" stroke-width="1.5" stroke-opacity="0.3"/>
+              <circle cx="540" cy="960" r="270" stroke="#10B981" stroke-width="1.5" stroke-opacity="0.35"/>
+              <line id="radar-sweep-line" x1="540" y1="960" x2="540" y2="550" stroke="#10B981" stroke-width="3" stroke-opacity="0.65"/>
+            </svg>
+
+            <!-- Persistent Progress & Top HUD -->
+            <div class="reel-progress-track">
+              <div id="reel-progress-fill"></div>
+            </div>
+            <div class="reel-top-hud">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="width:12px;height:12px;border-radius:999px;background:#10B981;display:inline-block;"></span>
+                <span style="color:#E2E8F0;">GEOGIS6</span>
+                <span style="color:#34D399;">v6.0 MOBILE</span>
+              </div>
+              <div id="hud-scene-label" style="color:#22D3EE;">PSAD56 ↔ REGVEN</div>
+            </div>
+
+            <!-- SCENE 1: HOOK (0.0s - 3.2s) -->
+            <section id="scene-1" class="scene" style="justify-content:center;gap:42px;">
+              <div id="s1-bg-blur" style="position:absolute;inset:0;opacity:0.2;filter:blur(4px);overflow:hidden;">
+                <img src="assets/screenshots/02-web-dashboard-badekas.png" alt="" style="width:100%;height:100%;object-fit:cover;" />
+              </div>
+              <div style="position:relative;z-index:2;display:flex;flex-direction:column;gap:42px;align-items:center;">
+                <div id="s1-badge" class="pill-tech" style="border-color:rgba(245,158,11,0.7);color:#FDE68A;background:rgba(120,53,15,0.45);">
+                  ⚠️ TOPOGRAFÍA Y GEODESIA · VENEZUELA
+                </div>
+                <h1 id="s1-title" class="headline-xl" style="font-size:84px;">
+                  ¿Sigues pasando de <span class="accent-amber">La Canoa</span> a <span class="accent-emerald">REGVEN</span> solo en PC?
+                </h1>
+                <div id="s1-sub" style="padding:28px 36px;border-radius:26px;background:rgba(15,23,42,0.92);border:2px solid rgba(6,182,212,0.5);text-align:center;">
+                  <p style="font-size:38px;font-weight:700;color:#E2E8F0;line-height:1.3;">
+                    Hazlo al milímetro en <span class="accent-cyan">Celular</span> y en la <span class="accent-emerald">Web</span> ⚡
+                  </p>
+                </div>
+                <div id="s1-chips" style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;font-family:var(--font-mono);font-size:24px;">
+                  <span style="padding:12px 22px;border-radius:14px;background:rgba(16,185,129,0.18);border:1px solid #10B981;color:#A7F3D0;">RIGIDA02</span>
+                  <span style="padding:12px 22px;border-radius:14px;background:rgba(6,182,212,0.18);border:1px solid #06B6D4;color:#A5F3FC;">BADEKAS 3D</span>
+                  <span style="padding:12px 22px;border-radius:14px;background:rgba(245,158,11,0.18);border:1px solid #F59E0B;color:#FDE68A;">CIVILCAD / DXF</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- SCENE 2: DUAL EXPERIENCE WEB + MOBILE (3.2s - 7.0s) -->
+            <section id="scene-2" class="scene" style="justify-content:space-between;">
+              <div id="s2-header" style="display:flex;flex-direction:column;gap:18px;align-items:center;">
+                <div class="pill-tech">🛰️ MISMA PRECISIÓN EN CAMPO Y GABINETE</div>
+                <h2 class="headline-lg">
+                  Visor Satelital en <span class="accent-cyan">Web</span> &amp; <span class="accent-emerald">Celular</span>
+                </h2>
+              </div>
+
+              <div style="position:relative;height:960px;width:100%;">
+                <!-- Desktop Card -->
+                <div id="s2-web-card" class="card-frame" style="position:absolute;top:10px;left:0;width:820px;">
+                  <div style="padding:14px 20px;background:#0F172A;border-bottom:1px solid rgba(56,189,248,0.2);display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:20px;color:#94A3B8;">
+                    <span>● ● ● &nbsp; ESTACIÓN WEB DESKTOP</span>
+                    <span style="color:#22D3EE;">HUSO 19N · REGVEN</span>
+                  </div>
+                  <img src="assets/screenshots/02-web-dashboard-badekas.png" alt="" style="width:100%;display:block;" />
+                </div>
+
+                <!-- Mobile Phone Overlapping Right -->
+                <div id="s2-mobile-card" class="phone-frame-reel" style="position:absolute;bottom:0;right:0;width:390px;">
+                  <img src="assets/screenshots/05-mobile-map-view.png" alt="" />
+                </div>
+              </div>
+
+              <div id="s2-metrics" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                <div class="stat-badge" style="border-color:rgba(6,182,212,0.5);">
+                  <div style="font-size:20px;color:#94A3B8;">SECTOR ADÍCORA</div>
+                  <div style="font-size:34px;color:#22D3EE;margin-top:4px;">14,644.51 m²</div>
+                </div>
+                <div class="stat-badge">
+                  <div style="font-size:20px;color:#94A3B8;">OPENLAYERS GIS</div>
+                  <div style="font-size:34px;color:#34D399;margin-top:4px;">1.4644 ha · 4V</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- SCENE 3: RIGIDA02 & QA/QC 0.001m (7.0s - 11.2s) -->
+            <section id="scene-3" class="scene" style="justify-content:space-between;">
+              <div id="s3-header" style="display:flex;flex-direction:column;gap:16px;align-items:center;">
+                <div class="pill-tech" style="border-color:rgba(6,182,212,0.6);color:#A5F3FC;">⚙️ MOTOR RIGIDA02 · PATVEN-98</div>
+                <h2 class="headline-lg">
+                  Cero Deformación de <span class="accent-emerald">Linderos</span>
+                </h2>
+              </div>
+
+              <div style="position:relative;height:790px;width:100%;">
+                <div id="s3-web" class="card-frame" style="position:absolute;top:0;right:0;width:780px;border-color:rgba(16,185,129,0.45);">
+                  <img src="assets/screenshots/03-web-rigida02-adicora.png" alt="" style="width:100%;display:block;" />
+                </div>
+                <div id="s3-mob" class="phone-frame-reel" style="position:absolute;bottom:0;left:0;width:360px;">
+                  <img src="assets/screenshots/07-mobile-results-drawer.png" alt="" />
+                </div>
+              </div>
+
+              <!-- Live Coordinate Counter -->
+              <div id="s3-counter-box" style="padding:26px 30px;border-radius:26px;background:rgba(15,23,42,0.95);border:2px solid rgba(6,182,212,0.45);font-family:var(--font-mono);">
+                <div style="display:flex;justify-content:space-between;font-size:22px;color:#94A3B8;margin-bottom:10px;">
+                  <span>VÉRTICE P1 · HITO AL-318</span>
+                  <span style="color:#22D3EE;">ΔE:-204.33 · ΔN:-311.54</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:38px;font-weight:700;color:#fff;">
+                  <span>E: <span id="s3-e-val" style="color:#34D399;">409662.260</span></span>
+                  <span>N: <span id="s3-n-val" style="color:#22D3EE;">1327653.220</span></span>
+                </div>
+              </div>
+
+              <!-- QA/QC Stamp -->
+              <div id="s3-stamp" style="padding:22px 28px;border-radius:22px;background:linear-gradient(135deg,rgba(16,185,129,0.28),rgba(6,182,212,0.22));border:3px solid #10B981;text-align:center;font-family:var(--font-mono);font-size:30px;font-weight:700;color:#ECFDF5;box-shadow:0 0 45px rgba(16,185,129,0.45);">
+                ✅ QA/QC APROBADO · INVARIANZA ≤ 0.001 m
+              </div>
+            </section>
+
+            <!-- SCENE 4: CIVILCAD + DXF EXPORT (11.2s - 15.2s) -->
+            <section id="scene-4" class="scene" style="justify-content:space-between;">
+              <div id="s4-header" style="display:flex;flex-direction:column;gap:16px;align-items:center;">
+                <div class="pill-tech" style="border-color:rgba(245,158,11,0.65);color:#FDE68A;">📐 DEL CAMPO AL PLANO CAD</div>
+                <h2 class="headline-lg">
+                  Exporta <span class="accent-amber">AutoCAD .DXF</span> y <span class="accent-cyan">CivilCAD</span> al Instante
+                </h2>
+              </div>
+
+              <div style="position:relative;height:810px;width:100%;">
+                <div id="s4-web" class="card-frame" style="position:absolute;top:0;left:0;width:780px;">
+                  <img src="assets/screenshots/04-web-parcelas-proyectos.png" alt="" style="width:100%;display:block;" />
+                </div>
+                <div id="s4-mob" class="phone-frame-reel" style="position:absolute;bottom:0;right:0;width:360px;">
+                  <img src="assets/screenshots/06-mobile-settings-drawer.png" alt="" />
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;font-family:var(--font-mono);">
+                <div id="s4-tag-1" class="stat-badge" style="font-size:24px;border-color:#22D3EE;">
+                  📄 Formato <span style="color:#22D3EE;">P,E,N,Z,D</span> CivilCAD
+                </div>
+                <div id="s4-tag-2" class="stat-badge" style="font-size:24px;border-color:#F59E0B;">
+                  🧱 Capas <span style="color:#FBBF24;">VERTICES / LINDEROS</span>
+                </div>
+                <div id="s4-tag-3" class="stat-badge" style="font-size:24px;border-color:#10B981;">
+                  🏔️ Curvas de Nivel + <span style="color:#34D399;">.KML</span>
+                </div>
+                <div id="s4-tag-4" class="stat-badge" style="font-size:24px;border-color:#94A3B8;">
+                  🏛️ Normativa <span style="color:#fff;">IGVSB · SAREN</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- SCENE 5: RBAC + OFFLINE-FIRST (15.2s - 18.0s) -->
+            <section id="scene-5" class="scene" style="justify-content:space-between;">
+              <div id="s5-header" style="display:flex;flex-direction:column;gap:16px;align-items:center;">
+                <div class="pill-tech">🔐 SEGURIDAD RBAC &amp; OFFLINE-FIRST</div>
+                <h2 class="headline-lg">
+                  Trabaja <span class="accent-emerald">Sin Cobertura</span> y Protege tus <span class="accent-cyan">Licencias</span>
+                </h2>
+              </div>
+
+              <div style="display:grid;grid-template-columns:360px 1fr;gap:28px;align-items:center;">
+                <div id="s5-mob" class="phone-frame-reel">
+                  <img src="assets/screenshots/08-mobile-projects-drawer.png" alt="" />
+                </div>
+                <div style="display:flex;flex-direction:column;gap:24px;">
+                  <div id="s5-web" class="card-frame">
+                    <img src="assets/screenshots/01-login-web.png" alt="" style="width:100%;display:block;" />
+                  </div>
+                  <div class="stat-badge" style="font-size:24px;">
+                    📡 Caché Local en Campo + ☁️ Nube
+                  </div>
+                  <div class="stat-badge" style="font-size:24px;border-color:#22D3EE;">
+                    🛡️ Roles RBAC + Device Binding
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- SCENE 6: CTA FINAL (18.0s - 21.0s) -->
+            <section id="scene-6" class="scene" style="justify-content:center;align-items:center;gap:42px;text-align:center;">
+              <div id="s6-logo" style="width:180px;height:180px;border-radius:42px;background:#0F172A;border:3px solid rgba(16,185,129,0.65);display:flex;align-items:center;justify-content:center;box-shadow:0 0 80px rgba(16,185,129,0.35);">
+                <svg width="110" height="110" viewBox="0 0 32 32" fill="none">
+                  <ellipse cx="16" cy="16" rx="12" ry="8" stroke="#10B981" stroke-width="1.8"/>
+                  <ellipse cx="16" cy="16" rx="8" ry="12" stroke="#06B6D4" stroke-width="1.4"/>
+                  <line x1="16" y1="2" x2="16" y2="30" stroke="#94A3B8" stroke-width="1" stroke-dasharray="2 2"/>
+                  <line x1="2" y1="16" x2="30" y2="16" stroke="#94A3B8" stroke-width="1" stroke-dasharray="2 2"/>
+                  <circle cx="16" cy="16" r="3" fill="#10B981"/>
+                </svg>
+              </div>
+
+              <div id="s6-brand">
+                <div style="font-family:var(--font-display);font-weight:700;font-size:104px;line-height:1;color:#fff;">
+                  Geo<span class="accent-emerald">GIS6</span>
+                </div>
+                <div style="margin-top:16px;font-family:var(--font-mono);font-size:28px;color:#FBBF24;font-weight:700;">
+                  FASE ACTUAL: GEOTRANSFORMER v6.0 MOBILE
+                </div>
+              </div>
+
+              <p id="s6-sub" style="font-size:38px;color:#CBD5E1;max-width:860px;line-height:1.3;">
+                Transformación geodésica, mapas satelitales y planos CAD en tu <span class="accent-cyan">Web</span> y <span class="accent-emerald">Celular</span>.
+              </p>
+
+              <div id="s6-cta" style="padding:30px 44px;border-radius:28px;background:linear-gradient(135deg,#10B981,#06B6D4);color:#030712;font-family:var(--font-display);font-weight:700;font-size:40px;box-shadow:0 24px 70px rgba(16,185,129,0.45);">
+                ¡PRUÉBALO AHORA! LINK EN BIO 👇
+              </div>
+
+              <div id="s6-url" style="font-family:var(--font-mono);font-size:24px;color:#94A3B8;">
+                geotransformer-monolith-fniu.onrender.com
+              </div>
+            </section>
+
+            <!-- Persistent Bottom Ticker -->
+            <div class="reel-bottom-hud">
+              <span style="color:#34D399;font-weight:700;">● RIGIDA02 · PATVEN-98</span>
+              <span id="hud-time" style="color:#E2E8F0;">00.0s / 21.0s</span>
+            </div>
+
+            <!-- TikTok Safe-Zone Overlay Guide (Studio Preview Only) -->
+            <div id="safezone-guide" class="tiktok-safezone-guide">
+              <div style="position:absolute;top:0;left:0;right:0;height:130px;background:rgba(244,63,94,0.18);border-bottom:2px dashed #FB7185;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:22px;color:#FDA4AF;">ZONA UI SUPERIOR TIKTOK</div>
+              <div style="position:absolute;bottom:200px;right:0;width:130px;height:660px;background:rgba(244,63,94,0.18);border-left:2px dashed #FB7185;writing-mode:vertical-rl;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;color:#FDA4AF;">BOTONES LIKE/SHARE</div>
+              <div style="position:absolute;bottom:0;left:0;right:0;height:200px;background:rgba(244,63,94,0.18);border-top:2px dashed #FB7185;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:22px;color:#FDA4AF;">DESCRIPCIÓN &amp; AUDIO TIKTOK</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Scrubber Controls -->
+        <div class="studio-chrome" style="max-width:380px;margin:14px auto 0;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button id="btn-play-pause" type="button" class="btn btn-primary" style="padding:8px 14px;">⏸ Pausar</button>
+            <input id="reel-scrubber" type="range" min="0" max="21" step="0.05" value="0" style="flex:1;accent-color:#10B981;" />
+            <button id="btn-safezone" type="button" class="btn btn-secondary" style="padding:8px 10px;font-size:11px;">Zona Segura</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: TikTok Script, Voiceover & Copy -->
+    <aside class="studio-chrome" style="display:flex;flex-direction:column;gap:20px;">
+      <div class="panel-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <h2 style="font-family:var(--font-display);font-size:20px;color:#fff;">🎙️ Guion de Locución (21s)</h2>
+          <span style="font-family:var(--font-mono);font-size:11px;color:#34D399;padding:4px 10px;border-radius:8px;background:rgba(16,185,129,0.15);">RITMO RÁPIDO · TIKTOK</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;font-size:13px;line-height:1.5;color:#CBD5E1;">
+          <div><strong style="color:#FBBF24;font-family:var(--font-mono);">0.0s – 3.2s (Hook):</strong> “¿Sigues volviendo a la oficina solo para pasar coordenadas de La Canoa a REGVEN? Mira cómo hacerlo en segundos desde tu celular o en la web.”</div>
+          <div><strong style="color:#22D3EE;font-family:var(--font-mono);">3.2s – 7.0s (Dual):</strong> “Con GeoGIS6, ahora en fase GeoTransformer v6.0, cargas tu poligonal sobre el mapa satelital en tiempo real, tanto en escritorio como directo en el terreno.”</div>
+          <div><strong style="color:#34D399;font-family:var(--font-mono);">7.0s – 11.2s (QA/QC):</strong> “Aplica Molodensky-Badekas o motor RIGIDA02 con verificación automática al milímetro: cero deformación en tus linderos.”</div>
+          <div><strong style="color:#FBBF24;font-family:var(--font-mono);">11.2s – 15.2s (CAD):</strong> “Y con un clic exportas tu cuadro de construcción a CivilCAD P,E,N,Z,D, KML o AutoCAD DXF con capas listas para IGVSB y SAREN.”</div>
+          <div><strong style="color:#22D3EE;font-family:var(--font-mono);">15.2s – 18.0s (Offline):</strong> “Trabaja offline sin cobertura celular, sincroniza en la nube y protege tus licencias por dispositivo.”</div>
+          <div><strong style="color:#34D399;font-family:var(--font-mono);">18.0s – 21.0s (CTA):</strong> “GeoGIS6: topografía de precisión en la palma de tu mano. Pruébalo en el enlace de la bio.”</div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <h3 style="font-family:var(--font-display);font-size:18px;color:#fff;">📝 Descripción y Hashtags para TikTok</h3>
+          <button id="btn-copy-caption" type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px;">Copiar Copy</button>
+        </div>
+        <pre id="tiktok-caption-text" style="white-space:pre-wrap;font-family:var(--font-sans);font-size:13px;line-height:1.55;color:#94A3B8;background:#070B14;padding:14px;border-radius:12px;border:1px solid rgba(56,189,248,0.16);">Transforma de La Canoa (PSAD56) a REGVEN al milímetro desde tu celular o PC 📐🛰️
+
+✅ Motor geodésico RIGIDA02 & Molodensky-Badekas (PATVEN-98)
+✅ Validación QA/QC ≤ 0.001 m (cero deformación de linderos)
+✅ Mapa satelital OpenLayers en Web y Móvil
+✅ Exportación directa a CivilCAD (P,E,N,Z,D), AutoCAD .DXF y .KML
+✅ Listo para normativa IGVSB, SAREN y PDVSA
+
+🚀 Pruébalo en vivo en: https://geotransformer-monolith-fniu.onrender.com/
+
+#Topografia #Geodesia #IngenieriaCivil #Agrimensura #Venezuela #REGVEN #PSAD56 #CivilCAD #AutoCAD #GIS #GeoGIS6 #GeoTransformer</pre>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const TOTAL_DURATION = 21.0;
+    const params = new URLSearchParams(window.location.search);
+    const isRenderMode = params.get('render') === '1';
+
+    if (isRenderMode) {
+      document.body.classList.add('render-mode');
+      document.getElementById('live-stage-wrap').style.display = 'block';
+    }
+
+    const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
+    const prog = (t, start, end) => clamp((t - start) / (end - start));
+    const easeOut = (x) => 1 - Math.pow(1 - clamp(x), 3);
+    const easeBack = (x) => {
+      const c1 = 1.70158;
+      const c3 = c1 + 1;
+      const t = clamp(x);
+      return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+    };
+    const lerp = (a, b, x) => a + (b - a) * clamp(x);
+
+    function sceneOpacity(t, start, end, fadeIn = 0.25, fadeOut = 0.22) {
+      if (t < start || t > end) return 0;
+      const inP = clamp((t - start) / fadeIn);
+      const outP = start === 18.0 ? 1 : clamp((end - t) / fadeOut);
+      return Math.min(inP, outP);
+    }
+
+    window.setReelTime = function (t) {
+      t = clamp(t, 0, TOTAL_DURATION);
+
+      // Progress bar & HUD
+      const fill = document.getElementById('reel-progress-fill');
+      if (fill) fill.style.width = `${(t / TOTAL_DURATION) * 100}%`;
+      const timeEl = document.getElementById('hud-time');
+      if (timeEl) timeEl.textContent = `${t.toFixed(1).padStart(4, '0')}s / 21.0s`;
+
+      // Radar rotation
+      const sweep = document.getElementById('radar-sweep-line');
+      if (sweep) {
+        const ang = (t * 65 * Math.PI) / 180;
+        const x2 = 540 + Math.sin(ang) * 410;
+        const y2 = 960 - Math.cos(ang) * 410;
+        sweep.setAttribute('x2', x2.toFixed(1));
+        sweep.setAttribute('y2', y2.toFixed(1));
+      }
+
+      const sceneHud = document.getElementById('hud-scene-label');
+      if (sceneHud) {
+        if (t < 3.2) sceneHud.textContent = 'PSAD56 ↔ REGVEN';
+        else if (t < 7.0) sceneHud.textContent = 'WEB + CELULAR EN CAMPO';
+        else if (t < 11.2) sceneHud.textContent = 'QA/QC ≤ 0.001 m';
+        else if (t < 15.2) sceneHud.textContent = 'CIVILCAD & AUTOCAD .DXF';
+        else if (t < 18.0) sceneHud.textContent = 'RBAC + OFFLINE-FIRST';
+        else sceneHud.textContent = 'GEOGIS6 v6.0 MOBILE';
+      }
+
+      // Scene 1 (0.0 - 3.2)
+      const s1 = document.getElementById('scene-1');
+      s1.style.opacity = sceneOpacity(t, 0, 3.25);
+      const p1 = prog(t, 0, 1.4);
+      document.getElementById('s1-badge').style.transform = `translateY(${lerp(-40, 0, easeOut(prog(t, 0, 0.5)))}px)`;
+      document.getElementById('s1-title').style.transform = `scale(${lerp(0.92, 1, easeBack(prog(t, 0.1, 0.8)))})`;
+      document.getElementById('s1-sub').style.opacity = easeOut(prog(t, 0.55, 1.15));
+      document.getElementById('s1-sub').style.transform = `translateY(${lerp(35, 0, easeOut(prog(t, 0.55, 1.15)))}px)`;
+      document.getElementById('s1-chips').style.opacity = easeOut(prog(t, 1.0, 1.6));
+      document.getElementById('s1-bg-blur').style.transform = `scale(${lerp(1.04, 1.14, p1)})`;
+
+      // Scene 2 (3.2 - 7.0)
+      const s2 = document.getElementById('scene-2');
+      s2.style.opacity = sceneOpacity(t, 3.15, 7.05);
+      document.getElementById('s2-header').style.transform = `translateY(${lerp(-30, 0, easeOut(prog(t, 3.2, 3.9)))}px)`;
+      document.getElementById('s2-web-card').style.transform = `translateX(${lerp(-180, 0, easeOut(prog(t, 3.25, 4.15)))}px)`;
+      document.getElementById('s2-mobile-card').style.transform = `translate(${lerp(140, 0, easeOut(prog(t, 3.55, 4.45)))}px, ${lerp(60, 0, easeOut(prog(t, 3.55, 4.45)))}px)`;
+      document.getElementById('s2-metrics').style.opacity = easeOut(prog(t, 4.2, 4.9));
+
+      // Scene 3 (7.0 - 11.2)
+      const s3 = document.getElementById('scene-3');
+      s3.style.opacity = sceneOpacity(t, 6.95, 11.25);
+      document.getElementById('s3-web').style.transform = `translateX(${lerp(150, 0, easeOut(prog(t, 7.0, 7.8)))}px)`;
+      document.getElementById('s3-mob').style.transform = `translateY(${lerp(110, 0, easeOut(prog(t, 7.2, 8.0)))}px)`;
+
+      // Live coordinate morphing: PSAD56 (409662.260, 1327653.220) -> REGVEN (409457.930, 1327341.680)
+      const morph = easeOut(prog(t, 7.6, 9.5));
+      document.getElementById('s3-e-val').textContent = lerp(409662.260, 409457.930, morph).toFixed(3);
+      document.getElementById('s3-n-val').textContent = lerp(1327653.220, 1327341.680, morph).toFixed(3);
+
+      const stampP = easeBack(prog(t, 8.8, 9.5));
+      const stampEl = document.getElementById('s3-stamp');
+      stampEl.style.opacity = clamp(prog(t, 8.8, 9.2));
+      stampEl.style.transform = `scale(${lerp(0.75, 1, stampP)})`;
+
+      // Scene 4 (11.2 - 15.2)
+      const s4 = document.getElementById('scene-4');
+      s4.style.opacity = sceneOpacity(t, 11.15, 15.25);
+      document.getElementById('s4-web').style.transform = `translateX(${lerp(-140, 0, easeOut(prog(t, 11.2, 12.0)))}px)`;
+      document.getElementById('s4-mob').style.transform = `translateX(${lerp(140, 0, easeOut(prog(t, 11.4, 12.2)))}px)`;
+      ['s4-tag-1', 's4-tag-2', 's4-tag-3', 's4-tag-4'].forEach((id, idx) => {
+        const tp = easeOut(prog(t, 11.8 + idx * 0.32, 12.4 + idx * 0.32));
+        const el = document.getElementById(id);
+        el.style.opacity = tp;
+        el.style.transform = `translateY(${lerp(28, 0, tp)}px)`;
+      });
+
+      // Scene 5 (15.2 - 18.0)
+      const s5 = document.getElementById('scene-5');
+      s5.style.opacity = sceneOpacity(t, 15.15, 18.05);
+      document.getElementById('s5-mob').style.transform = `translateX(${lerp(-120, 0, easeOut(prog(t, 15.2, 16.0)))}px)`;
+      document.getElementById('s5-web').style.transform = `translateX(${lerp(120, 0, easeOut(prog(t, 15.35, 16.15)))}px)`;
+
+      // Scene 6 (18.0 - 21.0)
+      const s6 = document.getElementById('scene-6');
+      s6.style.opacity = sceneOpacity(t, 17.95, 21.0);
+      document.getElementById('s6-logo').style.transform = `scale(${lerp(0.65, 1, easeBack(prog(t, 18.0, 18.7)))})`;
+      document.getElementById('s6-brand').style.transform = `translateY(${lerp(40, 0, easeOut(prog(t, 18.2, 18.8)))}px)`;
+      const ctaPulse = 1 + 0.03 * Math.sin((t - 18.5) * 6);
+      document.getElementById('s6-cta').style.transform = `scale(${t > 18.5 ? ctaPulse : lerp(0.85, 1, easeBack(prog(t, 18.2, 18.7)))})`;
+    };
+
+    // Scale 1080x1920 stage inside preview container when in browser
+    function fitPreviewScale() {
+      if (isRenderMode) return;
+      const shell = document.getElementById('reel-scaler');
+      const stage = document.getElementById('reel-stage');
+      if (!shell || !stage) return;
+      const scale = shell.clientWidth / 1080;
+      stage.style.transform = `scale(${scale})`;
+    }
+
+    if (!isRenderMode) {
+      fitPreviewScale();
+      window.addEventListener('resize', fitPreviewScale);
+
+      let playing = true;
+      let currentT = 0;
+      let lastTs = performance.now();
+
+      const tabMp4 = document.getElementById('btn-tab-mp4');
+      const tabLive = document.getElementById('btn-tab-live');
+      const wrapMp4 = document.getElementById('mp4-player-wrap');
+      const wrapLive = document.getElementById('live-stage-wrap');
+      const scrubber = document.getElementById('reel-scrubber');
+      const btnPlay = document.getElementById('btn-play-pause');
+      const btnSafe = document.getElementById('btn-safezone');
+      const safeGuide = document.getElementById('safezone-guide');
+
+      tabMp4.addEventListener('click', () => {
+        tabMp4.className = 'btn btn-active';
+        tabLive.className = 'btn btn-secondary';
+        wrapMp4.style.display = 'block';
+        wrapLive.style.display = 'none';
+      });
+
+      tabLive.addEventListener('click', () => {
+        tabLive.className = 'btn btn-active';
+        tabMp4.className = 'btn btn-secondary';
+        wrapMp4.style.display = 'none';
+        wrapLive.style.display = 'block';
+        fitPreviewScale();
+        lastTs = performance.now();
+      });
+
+      btnPlay.addEventListener('click', () => {
+        playing = !playing;
+        btnPlay.textContent = playing ? '⏸ Pausar' : '▶ Reproducir';
+        lastTs = performance.now();
+      });
+
+      scrubber.addEventListener('input', () => {
+        currentT = parseFloat(scrubber.value);
+        window.setReelTime(currentT);
+      });
+
+      btnSafe.addEventListener('click', () => {
+        safeGuide.classList.toggle('visible');
+        btnSafe.classList.toggle('btn-active');
+      });
+
+      document.getElementById('btn-copy-caption').addEventListener('click', async () => {
+        const text = document.getElementById('tiktok-caption-text').textContent;
+        await navigator.clipboard.writeText(text);
+        const btn = document.getElementById('btn-copy-caption');
+        btn.textContent = '✓ Copiado';
+        setTimeout(() => (btn.textContent = 'Copiar Copy'), 2000);
+      });
+
+      function tick(now) {
+        const dt = (now - lastTs) / 1000;
+        lastTs = now;
+        if (playing && wrapLive.style.display !== 'none') {
+          currentT = (currentT + dt) % TOTAL_DURATION;
+          scrubber.value = currentT.toFixed(2);
+          window.setReelTime(currentT);
+        }
+        requestAnimationFrame(tick);
+      }
+      window.setReelTime(0);
+      requestAnimationFrame(tick);
+    } else {
+      window.setReelTime(0);
+    }
+  </script>
+</body>
+</html>

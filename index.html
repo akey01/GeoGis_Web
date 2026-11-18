@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoGIS6 (v6.0 Mobile) — Suite Geodésica y Topográfica de Alta Precisión | PSAD56 ↔ REGVEN</title>
+  <meta
+    name="description"
+    content="GeoGIS6 (en fase de desarrollo como GeoTransformer v6.0 Mobile): transformación geodésica PSAD56 (La Canoa) ↔ REGVEN (SIRGAS/GRS80), motor RIGIDA02 QA/QC, visor satelital OpenLayers y exportación nativa CivilCAD/DXF en Web y Celular."
+  />
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23070B14'/%3E%3Cellipse cx='16' cy='16' rx='11' ry='7' fill='none' stroke='%2310B981' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%2306B6D4'/%3E%3C/svg%3E"
+  />
+
+  <!-- Google Fonts: Space Grotesk, Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'system-ui', 'sans-serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            geobg: '#070B14',
+            geosurface: '#0F172A',
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="bg-[#070B14] text-[#F8FAFC] antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
+  <!-- Topographic Backdrop -->
+  <div class="topo-backdrop" aria-hidden="true"></div>
+  <svg class="topo-contours-svg" viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M-80 180C180 110 380 280 640 210C900 140 1140 60 1520 190" stroke="#06B6D4" stroke-width="1" stroke-dasharray="6 6"/>
+    <path d="M-60 260C220 180 420 350 700 265C980 180 1200 130 1540 260" stroke="#10B981" stroke-width="1"/>
+    <path d="M-40 350C260 270 460 440 760 340C1060 240 1240 220 1560 360" stroke="#38BDF8" stroke-width="0.8" stroke-opacity="0.7"/>
+    <path d="M-100 580C190 500 410 660 720 570C1030 480 1250 540 1520 650" stroke="#10B981" stroke-width="1" stroke-dasharray="4 8"/>
+    <path d="M-60 670C240 600 470 760 780 660C1090 560 1290 640 1540 760" stroke="#06B6D4" stroke-width="0.9"/>
+    <circle cx="1180" cy="210" r="140" stroke="#10B981" stroke-width="0.6" stroke-opacity="0.45"/>
+    <circle cx="1180" cy="210" r="95" stroke="#06B6D4" stroke-width="0.6" stroke-opacity="0.45"/>
+    <circle cx="240" cy="700" r="180" stroke="#38BDF8" stroke-width="0.6" stroke-opacity="0.35"/>
+  </svg>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-[120] flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- 1. NAVBAR FIJO (GLASSMORPHISM) -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#070B14]/80 backdrop-blur-xl border-b border-cyan-500/15">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <a href="#hero" class="flex items-center gap-3 group shrink-0">
+        <!-- Custom SVG Ellipsoid + Crosshair Reticle Logo -->
+        <div class="w-10 h-10 rounded-xl bg-slate-900 border border-emerald-500/40 flex items-center justify-center shadow-lg shadow-emerald-500/15 group-hover:border-cyan-400/60 transition-colors">
+          <svg class="w-6 h-6" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="16" cy="16" rx="12" ry="8" stroke="#10B981" stroke-width="1.6"/>
+            <ellipse cx="16" cy="16" rx="8" ry="12" stroke="#06B6D4" stroke-width="1.2" stroke-opacity="0.75"/>
+            <line x1="16" y1="2" x2="16" y2="30" stroke="#94A3B8" stroke-width="1" stroke-dasharray="2 2"/>
+            <line x1="2" y1="16" x2="30" y2="16" stroke="#94A3B8" stroke-width="1" stroke-dasharray="2 2"/>
+            <circle cx="16" cy="16" r="2.6" fill="#10B981"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5 sm:gap-2">
+            <span class="font-display font-bold text-base sm:text-lg tracking-tight text-white">Geo<span class="text-emerald-400">GIS6</span></span>
+            <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">v6.0 Mobile</span>
+          </div>
+          <p class="text-[10px] font-mono text-slate-400 hidden sm:block">Dev Build: GeoTransformer v6.0</p>
+        </div>
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-5 text-xs font-medium text-slate-300">
+        <a href="#hero" class="hover:text-emerald-400 transition-colors">Motor Geodésico</a>
+        <a href="#capturas" class="hover:text-cyan-400 transition-colors">App Web &amp; Celular</a>
+        <a href="reel.html" class="inline-flex items-center gap-1.5 text-amber-300 hover:text-amber-200 font-semibold transition-colors">🎬 Reel TikTok</a>
+        <a href="#capacidades" class="hover:text-emerald-400 transition-colors">Capacidades &amp; CAD</a>
+        <a href="#flujo" class="hover:text-emerald-400 transition-colors">Normativa IGVSB</a>
+        <a href="#seguridad" class="hover:text-cyan-400 transition-colors">Seguridad RBAC</a>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <a
+          data-env-url="desktop"
+          href="https://geotransformer-monolith-fniu.onrender.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-cyan-500/30 text-xs font-semibold text-cyan-300 transition-all whitespace-nowrap"
+        >
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Estación Desktop
+        </a>
+        <a
+          data-env-url="apk"
+          href="/downloads/GeoGis6_Android.apk"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hidden xl:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-emerald-500/30 text-xs font-semibold text-emerald-300 transition-all whitespace-nowrap"
+        >
+          App Android
+        </a>
+        <a
+          data-env-url="admin"
+          href="http://localhost:4000"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hidden xl:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all whitespace-nowrap"
+        >
+          Panel Admin
+        </a>
+        <button
+          type="button"
+          data-open-license-modal
+          class="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[11px] sm:text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/25 transition-all active:scale-95 whitespace-nowrap"
+        >
+          <span class="sm:hidden">Licencia</span>
+          <span class="hidden sm:inline">Solicitar Licencia</span>
+        </button>
+        <button
+          id="mobile-nav-toggle"
+          type="button"
+          aria-label="Abrir menú"
+          class="lg:hidden p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Dropdown Navigation -->
+    <div id="mobile-nav-menu" class="hidden lg:hidden bg-[#0B1120]/95 backdrop-blur-xl border-b border-slate-800 px-4 py-4 space-y-2 text-sm">
+      <a href="#hero" class="block py-2 px-3 rounded-lg hover:bg-slate-800/70 text-slate-200">Motor Geodésico</a>
+      <a href="#capturas" class="block py-2 px-3 rounded-lg hover:bg-slate-800/70 text-cyan-300">Capturas Web &amp; Celular</a>
+      <a href="reel.html" class="block py-2 px-3 rounded-lg hover:bg-slate-800/70 text-amber-300 font-semibold">🎬 Ver Reel TikTok (9:16)</a>
+      <a href="#capacidades" class="block py-2 px-3 rounded-lg hover:bg-slate-800/70 text-slate-200">Capacidades &amp; Exportación CAD</a>
+      <a href="#flujo" class="block py-2 px-3 rounded-lg hover:bg-slate-800/70 text-slate-200">Flujo Campo-Gabinete</a>
+      <a href="#seguridad" class="block py-2 px-3 rounded-lg hover:bg-slate-800/70 text-slate-200">Seguridad RBAC</a>
+      <a
+        data-env-url="desktop"
+        href="https://geotransformer-monolith-fniu.onrender.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="block py-2.5 px-3 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-semibold text-center"
+      >
+        Abrir Estación Desktop
+      </a>
+      <a
+        data-env-url="apk"
+        href="/downloads/GeoGis6_Android.apk"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="block py-2.5 px-3 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold text-center"
+      >
+        Descargar App Android (.APK)
+      </a>
+      <a
+        data-env-url="admin"
+        href="http://localhost:4000"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="block py-2.5 px-3 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-200 font-semibold text-center"
+      >
+        Panel GeoGis_Admin
+      </a>
+    </div>
+  </header>
+
+  <main class="relative z-10 pt-24">
+    <!-- 2. HERO SECTION + SIMULADOR INTERACTIVO DE COORDENADAS -->
+    <section id="hero" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16 lg:pt-10 lg:pb-24">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+        <!-- Left Column: Product Pitch & Telemetry Metrics -->
+        <div class="lg:col-span-6 space-y-6">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="telemetry-pill">
+              <span class="pulse-dot"></span>
+              INGENIERÍA GEOMÁTICA &amp; TOPOGRAFÍA DE CAMPO
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 font-mono text-[11px] font-semibold text-amber-300">
+              FASE DESARROLLO: GEOTRANSFORMER v6.0 MOBILE
+            </span>
+          </div>
+
+          <h1 class="font-display font-bold text-3xl sm:text-5xl lg:text-[3.25rem] leading-[1.08] tracking-tight text-white">
+            Transformación Geodésica de Alta Precisión en la
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-300 to-emerald-300">
+              Palma de tu Mano.
+            </span>
+          </h1>
+
+          <p class="text-slate-300 text-base sm:text-lg leading-relaxed">
+            <strong>GeoGIS6</strong> (desplegado actualmente en fase beta operativa como
+            <span class="text-emerald-400 font-semibold">GeoTransformer v6.0 Mobile</span>) unifica el cálculo geodésico
+            riguroso <strong>PSAD56 (La Canoa) ↔ REGVEN (SIRGAS / GRS80)</strong>, visor satelital
+            <strong>OpenLayers</strong> con cálculo de poligonales, auditoría de rigidez métrica
+            <code class="font-mono text-cyan-300 bg-slate-900/90 px-1.5 py-0.5 rounded border border-slate-800">RIGIDA02 ≤ 0.001 m</code>
+            y exportación instantánea a <strong>CivilCAD / DXF</strong> tanto en estación web de escritorio como en teléfono celular en campo.
+          </p>
+
+          <!-- Key Action Buttons -->
+          <div class="flex flex-wrap items-center gap-3 pt-1">
+            <a
+              data-env-url="desktop"
+              href="https://geotransformer-monolith-fniu.onrender.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-bold text-sm shadow-xl shadow-emerald-500/20 transition-all active:scale-95"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+                <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+              </svg>
+              Abrir Estación Desktop
+            </a>
+            <a
+              data-env-url="apk"
+              href="/downloads/GeoGis6_Android.apk"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 font-semibold text-sm transition-all"
+            >
+              Descargar App Android (.APK)
+            </a>
+            <a
+              data-env-url="admin"
+              href="http://localhost:4000"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/50 text-slate-100 font-semibold text-sm transition-all"
+            >
+              Panel Admin
+              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </a>
+            <a
+              href="reel.html"
+              class="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-semibold text-sm transition-all"
+            >
+              🎬 Ver Reel TikTok
+            </a>
+          </div>
+
+          <!-- Real Technical Metrics Bar -->
+          <div class="grid grid-cols-3 gap-3 pt-4 border-t border-slate-800/80">
+            <div class="tech-card p-3.5 crosshair-tr-bl">
+              <div class="font-mono text-lg sm:text-xl font-bold text-emerald-400">0.001 m</div>
+              <div class="text-[11px] text-slate-400 mt-0.5 leading-snug">Tolerancia QA/QC invarianza euclidiana</div>
+            </div>
+            <div class="tech-card p-3.5 crosshair-tr-bl">
+              <div class="font-mono text-lg sm:text-xl font-bold text-cyan-300">18N–21N</div>
+              <div class="text-[11px] text-slate-400 mt-0.5 leading-snug">Husos UTM Venezuela &amp; Malla PATVEN-98</div>
+            </div>
+            <div class="tech-card p-3.5 crosshair-tr-bl">
+              <div class="font-mono text-lg sm:text-xl font-bold text-amber-300">IGVSB</div>
+              <div class="text-[11px] text-slate-400 mt-0.5 leading-snug">Estándar SAREN, Catastro &amp; CivilCAD</div>
+            </div>
+          </div>
+
+          <!-- Telemetry Specs Strip -->
+          <div class="flex flex-wrap items-center gap-2 pt-1 font-mono text-[11px] text-slate-400">
+            <span class="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-800 text-emerald-300">DATUM: REGVEN (EPSG:2202/2203)</span>
+            <span class="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-800 text-cyan-300">MOTOR: RIGIDA02 + BADEKAS 3D</span>
+            <span class="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-800 text-slate-300">MODO: WEB + MÓVIL</span>
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive Live Geodesic Simulator Widget -->
+        <div class="lg:col-span-6">
+          <div class="tech-card crosshair-corners laser-scan p-5 sm:p-6 shadow-2xl shadow-cyan-950/30">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-800/80">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  <h2 class="font-display font-bold text-sm uppercase tracking-wider text-white">
+                    Simulador Geodésico en Vivo
+                  </h2>
+                </div>
+                <p class="text-[11px] font-mono text-slate-400 mt-0.5">
+                  Núcleo matemático real GeoEngine (Hayford 1924 ↔ GRS80)
+                </p>
+              </div>
+              <span id="sim-qaqc-status" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 font-mono text-[10px] font-bold text-emerald-300">
+                QA/QC INVARIANZA OK
+              </span>
+            </div>
+
+            <!-- Direction & Method Controls -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+              <div>
+                <label class="block text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">Dirección de Transformación</label>
+                <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-950/90 border border-slate-800">
+                  <button
+                    type="button"
+                    data-sim-dir="canoa_regven"
+                    data-active="true"
+                    class="tab-btn py-1.5 px-2 rounded-lg text-[11px] font-mono font-bold border border-transparent text-slate-400"
+                  >
+                    PSAD56 → REGVEN
+                  </button>
+                  <button
+                    type="button"
+                    data-sim-dir="regven_canoa"
+                    data-active="false"
+                    class="tab-btn py-1.5 px-2 rounded-lg text-[11px] font-mono font-bold border border-transparent text-slate-400"
+                  >
+                    REGVEN → PSAD56
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">Huso UTM Venezuela</label>
+                <div class="grid grid-cols-4 gap-1.5 p-1 rounded-xl bg-slate-950/90 border border-slate-800">
+                  <button type="button" data-sim-huso="18" data-active="false" class="tab-btn py-1.5 rounded-lg text-[11px] font-mono font-bold border border-transparent text-slate-400">18N</button>
+                  <button type="button" data-sim-huso="19" data-active="true" class="tab-btn py-1.5 rounded-lg text-[11px] font-mono font-bold border border-transparent text-slate-400">19N</button>
+                  <button type="button" data-sim-huso="20" data-active="false" class="tab-btn py-1.5 rounded-lg text-[11px] font-mono font-bold border border-transparent text-slate-400">20N</button>
+                  <button type="button" data-sim-huso="21" data-active="false" class="tab-btn py-1.5 rounded-lg text-[11px] font-mono font-bold border border-transparent text-slate-400">21N</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Method & Sector Preset -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 mt-3">
+              <div class="sm:col-span-7">
+                <label class="block text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">Motor de Cálculo</label>
+                <div class="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-slate-950/90 border border-slate-800">
+                  <button type="button" data-sim-method="rigida02" data-active="true" class="tab-btn py-1.5 px-2 rounded-lg text-[10px] font-mono font-bold border border-transparent text-slate-400">RIGIDA02</button>
+                  <button type="button" data-sim-method="badekas" data-active="false" class="tab-btn py-1.5 px-2 rounded-lg text-[10px] font-mono font-bold border border-transparent text-slate-400">Badekas 3D</button>
+                  <button type="button" data-sim-method="rigida" data-active="false" class="tab-btn py-1.5 px-2 rounded-lg text-[10px] font-mono font-bold border border-transparent text-slate-400">Rígida IDW</button>
+                </div>
+              </div>
+              <div class="sm:col-span-5">
+                <label for="sim-preset-select" class="block text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">Calibración / Zona</label>
+                <select
+                  id="sim-preset-select"
+                  class="w-full h-[38px] px-2.5 rounded-xl bg-slate-950/90 border border-cyan-500/30 text-xs font-mono text-cyan-200 outline-none focus:border-cyan-400"
+                >
+                  <option value="al318">Adícora AL-318 (19N)</option>
+                  <option value="buchuaco">Sector Buchuaco (19N)</option>
+                  <option value="supi">Sector El Supí (19N)</option>
+                  <option value="caracas">Caracas Este (20N)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Coordinate Inputs -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+              <div>
+                <label for="sim-input-este" class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Este Origen (m)</label>
+                <input id="sim-input-este" type="number" step="0.001" value="409662.260" class="sim-input" />
+              </div>
+              <div>
+                <label for="sim-input-norte" class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Norte Origen (m)</label>
+                <input id="sim-input-norte" type="number" step="0.001" value="1327653.220" class="sim-input" />
+              </div>
+              <div>
+                <label for="sim-input-z" class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Cota Campo (m)</label>
+                <input id="sim-input-z" type="number" step="0.001" value="0" class="sim-input text-cyan-300" />
+              </div>
+            </div>
+
+            <div id="sim-transpose-badge" class="hidden mt-2.5 px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/40 text-[11px] font-mono text-amber-300">
+              ↕ Auto-corrección de transposición Norte/Este detectada y normalizada automáticamente.
+            </div>
+
+            <!-- Live Output Card -->
+            <div class="mt-4 p-4 rounded-xl bg-[#070B14]/90 border border-emerald-500/25 space-y-3">
+              <div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider">
+                <span id="sim-target-datum-label" class="text-emerald-400 font-bold">SALIDA REGVEN (GRS80) · HUSO 19N</span>
+                <span class="text-slate-500">Vértice P1 / Poligonal 4V</span>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2">
+                <div class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
+                  <div class="text-[10px] font-mono text-slate-400">ESTE (X)</div>
+                  <div id="sim-out-este" class="font-mono font-bold text-sm sm:text-base text-white mt-0.5">409457.930 m</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
+                  <div class="text-[10px] font-mono text-slate-400">NORTE (Y)</div>
+                  <div id="sim-out-norte" class="font-mono font-bold text-sm sm:text-base text-white mt-0.5">1327341.680 m</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
+                  <div class="text-[10px] font-mono text-slate-400">COTA GEOIDAL</div>
+                  <div id="sim-out-cota" class="font-mono font-bold text-sm sm:text-base text-cyan-300 mt-0.5">-22.450 m</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2 pt-1 text-[11px] font-mono">
+                <div class="flex justify-between px-2.5 py-1.5 rounded bg-slate-900/60 border border-slate-800/80">
+                  <span class="text-slate-500">ΔE:</span>
+                  <span id="sim-delta-e" class="text-cyan-300 font-semibold">-204.330 m</span>
+                </div>
+                <div class="flex justify-between px-2.5 py-1.5 rounded bg-slate-900/60 border border-slate-800/80">
+                  <span class="text-slate-500">ΔN:</span>
+                  <span id="sim-delta-n" class="text-cyan-300 font-semibold">-311.540 m</span>
+                </div>
+                <div class="flex justify-between px-2.5 py-1.5 rounded bg-slate-900/60 border border-slate-800/80">
+                  <span class="text-slate-500">ΔD:</span>
+                  <span id="sim-delta-d" class="text-emerald-400 font-semibold">372.569 m</span>
+                </div>
+              </div>
+
+              <div class="text-[11px] font-mono text-slate-400 space-y-1 pt-1 border-t border-slate-800/80">
+                <div class="flex flex-wrap justify-between gap-1">
+                  <span class="text-slate-500">Geográficas (φ, λ):</span>
+                  <span id="sim-out-geo" class="text-slate-200">—</span>
+                </div>
+                <div class="flex flex-wrap justify-between gap-1">
+                  <span class="text-slate-500">Geocéntricas (X, Y, Z):</span>
+                  <span id="sim-out-cart" class="text-slate-300">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Export Buttons -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4">
+              <button
+                id="btn-copy-civilcad"
+                type="button"
+                class="py-2.5 px-4 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-200 font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copiar P,E,N,Z,D (CivilCAD)
+              </button>
+              <button
+                type="button"
+                data-export-dxf
+                class="py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 active:scale-95"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 10l5 5 5-5M12 15V3"/>
+                </svg>
+                Exportar .DXF (4 Vértices)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. GALERÍA REAL DEL SISTEMA: EXPERIENCIA DUAL WEB (GABINETE) & CELULAR (CAMPO) -->
+    <section id="capturas" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-800/70">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <div class="space-y-3 max-w-2xl">
+          <span class="telemetry-pill">
+            <span class="pulse-dot"></span>
+            CAPTURAS REALES DEL SISTEMA EN PRODUCCIÓN
+          </span>
+          <h2 class="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight">
+            Un Solo Núcleo Geodésico: <span class="text-cyan-400">Estación Web</span> &amp; <span class="text-emerald-400">Celular en Campo</span>
+          </h2>
+          <p class="text-slate-400 text-sm sm:text-base">
+            Imágenes capturadas directamente desde el entorno operativo en línea
+            (<span class="font-mono text-xs text-cyan-300">geotransformer-monolith-fniu.onrender.com</span>), demostrando el flujo completo de una poligonal real en el Sector Adícora (Falcón, Huso 19N) tanto en navegador de escritorio como en smartphone táctil.
+          </p>
+        </div>
+
+        <!-- View Mode Switcher -->
+        <div class="inline-flex flex-wrap gap-1.5 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 shrink-0">
+          <button
+            type="button"
+            data-gallery-mode="dual"
+            data-active="true"
+            class="tab-btn px-4 py-2 rounded-xl text-xs font-mono font-bold border border-transparent text-slate-400"
+          >
+            Comparativa Dual
+          </button>
+          <button
+            type="button"
+            data-gallery-mode="web"
+            data-active="false"
+            class="tab-btn px-4 py-2 rounded-xl text-xs font-mono font-bold border border-transparent text-slate-400"
+          >
+            Modo Web (Desktop)
+          </button>
+          <button
+            type="button"
+            data-gallery-mode="mobile"
+            data-active="false"
+            class="tab-btn px-4 py-2 rounded-xl text-xs font-mono font-bold border border-transparent text-slate-400"
+          >
+            Modo Celular (4 Vistas)
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW A: COMPARATIVA DUAL (DESKTOP + CELULAR SIMULTÁNEO) -->
+      <div id="gallery-dual-view" class="space-y-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <!-- Desktop Mockup (8 cols) -->
+          <div class="lg:col-span-8 space-y-4">
+            <div class="desktop-frame">
+              <div class="desktop-topbar">
+                <div class="window-dots">
+                  <span class="bg-rose-500/80"></span>
+                  <span class="bg-amber-400/80"></span>
+                  <span class="bg-emerald-500/80"></span>
+                </div>
+                <div data-web-url class="browser-url-bar">geotransformer-monolith-fniu.onrender.com/dashboard</div>
+                <span data-web-tag class="hidden sm:inline-block px-2 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 font-mono text-[10px] font-bold text-cyan-300">
+                  WEB DESKTOP
+                </span>
+              </div>
+              <button type="button" data-zoom-web class="shot-trigger">
+                <img
+                  data-web-img
+                  src="assets/screenshots/02-web-dashboard-badekas.png"
+                  alt="GeoGIS6 en modo Web Desktop"
+                  class="w-full h-auto block"
+                  loading="eager"
+                />
+                <span class="shot-zoom-badge">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/>
+                  </svg>
+                  Ampliar Captura Web
+                </span>
+              </button>
+            </div>
+
+            <!-- Web Module Selector Tabs -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <button type="button" data-web-thumb="0" data-active="true" class="tab-btn p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 text-left">
+                <div class="font-mono text-[10px] font-bold text-emerald-400">01 · MAPA + BADEKAS</div>
+                <div class="text-xs font-semibold text-slate-200 mt-0.5 truncate">Visor Satelital 19N</div>
+              </button>
+              <button type="button" data-web-thumb="1" data-active="false" class="tab-btn p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 text-left">
+                <div class="font-mono text-[10px] font-bold text-cyan-400">02 · RIGIDA02 QA/QC</div>
+                <div class="text-xs font-semibold text-slate-200 mt-0.5 truncate">Adícora AL-318</div>
+              </button>
+              <button type="button" data-web-thumb="2" data-active="false" class="tab-btn p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 text-left">
+                <div class="font-mono text-[10px] font-bold text-amber-300">03 · PARCELAS &amp; DXF</div>
+                <div class="text-xs font-semibold text-slate-200 mt-0.5 truncate">Mensura y Curvas</div>
+              </button>
+              <button type="button" data-web-thumb="3" data-active="false" class="tab-btn p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 text-left">
+                <div class="font-mono text-[10px] font-bold text-slate-400">04 · ACCESO RBAC</div>
+                <div class="text-xs font-semibold text-slate-200 mt-0.5 truncate">Control Dispositivos</div>
+              </button>
+            </div>
+
+            <div class="tech-card p-4">
+              <div data-web-title class="font-display font-bold text-base text-white">Visor Satelital OpenLayers + Motor Molodensky-Badekas</div>
+              <p data-web-desc class="text-xs text-slate-400 mt-1 leading-relaxed"></p>
+            </div>
+          </div>
+
+          <!-- Mobile Phone Mockup (4 cols) -->
+          <div class="lg:col-span-4 space-y-4">
+            <div class="phone-chassis">
+              <div class="phone-screen">
+                <button type="button" data-zoom-mobile class="shot-trigger">
+                  <img
+                    data-mobile-img
+                    src="assets/screenshots/05-mobile-map-view.png"
+                    alt="GeoGIS6 en modo Celular"
+                    loading="eager"
+                  />
+                  <span class="shot-zoom-badge">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/>
+                    </svg>
+                    Ampliar Móvil
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Mobile Screen Selector -->
+            <div class="grid grid-cols-4 gap-1.5 max-w-[330px] mx-auto">
+              <button type="button" data-mobile-thumb="0" data-active="true" class="tab-btn py-2 px-1 rounded-xl bg-slate-900/70 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 text-center">Mapa</button>
+              <button type="button" data-mobile-thumb="1" data-active="false" class="tab-btn py-2 px-1 rounded-xl bg-slate-900/70 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 text-center">Ajustes</button>
+              <button type="button" data-mobile-thumb="2" data-active="false" class="tab-btn py-2 px-1 rounded-xl bg-slate-900/70 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 text-center">Tabla</button>
+              <button type="button" data-mobile-thumb="3" data-active="false" class="tab-btn py-2 px-1 rounded-xl bg-slate-900/70 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 text-center">Nube</button>
+            </div>
+
+            <div class="tech-card p-4 max-w-[340px] mx-auto">
+              <div data-mobile-tag class="font-mono text-[10px] font-bold text-emerald-400">CELULAR · MAPA GNSS/SATELITAL</div>
+              <div data-mobile-title class="font-display font-bold text-sm text-white mt-0.5">Mapa Satelital de Campo</div>
+              <p data-mobile-desc class="text-xs text-slate-400 mt-1 leading-relaxed"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW B: MODO WEB FOCUS -->
+      <div id="gallery-web-view" class="hidden space-y-6">
+        <div class="desktop-frame max-w-5xl mx-auto">
+          <div class="desktop-topbar">
+            <div class="window-dots">
+              <span class="bg-rose-500/80"></span>
+              <span class="bg-amber-400/80"></span>
+              <span class="bg-emerald-500/80"></span>
+            </div>
+            <div data-web-url class="browser-url-bar">geotransformer-monolith-fniu.onrender.com/dashboard</div>
+            <span data-web-tag class="px-2 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 font-mono text-[10px] font-bold text-cyan-300">WEB DESKTOP</span>
+          </div>
+          <button type="button" data-zoom-web class="shot-trigger">
+            <img data-web-img src="assets/screenshots/02-web-dashboard-badekas.png" alt="Vista Web Desktop" class="w-full h-auto block" />
+            <span class="shot-zoom-badge">Clic para pantalla completa</span>
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button type="button" data-web-thumb="0" data-active="true" class="tab-btn tech-card p-4 text-left">
+            <div class="font-mono text-[10px] font-bold text-emerald-400">CAPTURA 01 · BADEKAS 3D</div>
+            <div class="font-display font-bold text-sm text-white mt-1">Dashboard + Satélite</div>
+            <p class="text-xs text-slate-400 mt-1">Poligonal trazada en REGVEN 19N sobre Adícora con área y perímetro.</p>
+          </button>
+          <button type="button" data-web-thumb="1" data-active="false" class="tab-btn tech-card p-4 text-left">
+            <div class="font-mono text-[10px] font-bold text-cyan-400">CAPTURA 02 · RIGIDA02</div>
+            <div class="font-display font-bold text-sm text-white mt-1">Ajuste Adícora AL-318</div>
+            <p class="text-xs text-slate-400 mt-1">Parámetros editables (-204.330 / -311.540 m) y dictamen QA/QC.</p>
+          </button>
+          <button type="button" data-web-thumb="2" data-active="false" class="tab-btn tech-card p-4 text-left">
+            <div class="font-mono text-[10px] font-bold text-amber-300">CAPTURA 03 · PARCELAS</div>
+            <div class="font-display font-bold text-sm text-white mt-1">Catastro &amp; Exportación DXF</div>
+            <p class="text-xs text-slate-400 mt-1">Tarjetas de parcela, edición de linderos, curvas satelitales y DXF.</p>
+          </button>
+          <button type="button" data-web-thumb="3" data-active="false" class="tab-btn tech-card p-4 text-left">
+            <div class="font-mono text-[10px] font-bold text-slate-400">CAPTURA 04 · LOGIN</div>
+            <div class="font-display font-bold text-sm text-white mt-1">Acceso RBAC Cifrado</div>
+            <p class="text-xs text-slate-400 mt-1">Control de sesión con huella de dispositivo y límites por licencia.</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW C: MODO CELULAR (4 PANTALLAS DE CAMPO EN PARALELO) -->
+      <div id="gallery-mobile-view" class="hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="space-y-3">
+            <div class="phone-chassis">
+              <div class="phone-screen">
+                <button type="button" data-zoom-mobile-idx="0" class="shot-trigger">
+                  <img src="assets/screenshots/05-mobile-map-view.png" alt="Celular - Mapa Satelital" loading="eager" />
+                  <span class="shot-zoom-badge">Ampliar</span>
+                </button>
+              </div>
+            </div>
+            <div class="text-center px-2">
+              <div class="font-mono text-[10px] font-bold text-emerald-400">01 · MAPA SATELITAL</div>
+              <div class="font-display font-bold text-sm text-white">Visor Táctil en Campo</div>
+              <p class="text-xs text-slate-400 mt-1">Navegación, medición de linderos, dock inferior y telemetría de nube.</p>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="phone-chassis">
+              <div class="phone-screen">
+                <button type="button" data-zoom-mobile-idx="1" class="shot-trigger">
+                  <img src="assets/screenshots/06-mobile-settings-drawer.png" alt="Celular - Drawer Ajustes" loading="eager" />
+                  <span class="shot-zoom-badge">Ampliar</span>
+                </button>
+              </div>
+            </div>
+            <div class="text-center px-2">
+              <div class="font-mono text-[10px] font-bold text-cyan-400">02 · DRAWER AJUSTES</div>
+              <div class="font-display font-bold text-sm text-white">Motores &amp; Huso UTM</div>
+              <p class="text-xs text-slate-400 mt-1">Cambio rápido a Badekas, Rígida o Rígida 02 Adícora desde el móvil.</p>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="phone-chassis">
+              <div class="phone-screen">
+                <button type="button" data-zoom-mobile-idx="2" class="shot-trigger">
+                  <img src="assets/screenshots/07-mobile-results-drawer.png" alt="Celular - Drawer Resultados" loading="eager" />
+                  <span class="shot-zoom-badge">Ampliar</span>
+                </button>
+              </div>
+            </div>
+            <div class="text-center px-2">
+              <div class="font-mono text-[10px] font-bold text-emerald-400">03 · RESULTADOS QA/QC</div>
+              <div class="font-display font-bold text-sm text-white">CivilCAD P,E,N,Z,D</div>
+              <p class="text-xs text-slate-400 mt-1">Tabla de vértices, verificación QA/QC aprobado y exportación inmediata.</p>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="phone-chassis">
+              <div class="phone-screen">
+                <button type="button" data-zoom-mobile-idx="3" class="shot-trigger">
+                  <img src="assets/screenshots/08-mobile-projects-drawer.png" alt="Celular - Drawer Proyectos" loading="eager" />
+                  <span class="shot-zoom-badge">Ampliar</span>
+                </button>
+              </div>
+            </div>
+            <div class="text-center px-2">
+              <div class="font-mono text-[10px] font-bold text-amber-300">04 · PROYECTOS NUBE</div>
+              <div class="font-display font-bold text-sm text-white">Sincronización &amp; Offline</div>
+              <p class="text-xs text-slate-400 mt-1">Guardado en nube o dispositivo local y exportación DXF pura en sitio.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIKTOK REEL SHOWCASE CARD -->
+      <div id="tiktok-reel" class="mt-14 tech-card crosshair-corners p-6 sm:p-8 bg-gradient-to-br from-slate-900/95 via-[#0B1120] to-cyan-950/25">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div class="lg:col-span-7 space-y-4">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="telemetry-pill">
+                <span class="pulse-dot"></span>
+                FORMATO VERTICAL 9:16 · FULL HD 1080×1920
+              </span>
+              <span class="px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/35 font-mono text-[10px] font-bold text-amber-300">
+                TIKTOK / REELS / SHORTS
+              </span>
+            </div>
+            <h3 class="font-display font-bold text-2xl sm:text-3xl text-white">
+              Reel Oficial de Presentación para <span class="text-cyan-400">TikTok</span>
+            </h3>
+            <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+              Video vertical de <strong>21 segundos</strong> renderizado con las capturas reales de campo y gabinete (Adícora Huso 19N), animaciones cinéticas del motor <strong>RIGIDA02</strong>, sello <strong>QA/QC ≤ 0.001 m</strong>, exportación <strong>CivilCAD / DXF</strong> y pista de audio técnica a 120 BPM lista para publicar.
+            </p>
+            <div class="flex flex-wrap gap-3 pt-1">
+              <a
+                href="assets/video/geogis6_tiktok_reel.mp4"
+                download="GeoGIS6_TikTok_Reel_1080x1920.mp4"
+                class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 transition-all"
+              >
+                ⬇ Descargar Video MP4 (1080×1920)
+              </a>
+              <a
+                href="reel.html"
+                class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-cyan-500/35 text-cyan-300 font-bold text-xs uppercase tracking-wider transition-all"
+              >
+                🎬 Abrir TikTok Studio &amp; Guion
+              </a>
+            </div>
+          </div>
+          <div class="lg:col-span-5 flex justify-center">
+            <div class="phone-chassis" style="max-width:265px;">
+              <div class="phone-screen bg-[#020617]">
+                <video
+                  src="assets/video/geogis6_tiktok_reel.mp4"
+                  controls
+                  playsinline
+                  loop
+                  class="w-full h-auto block"
+                  style="aspect-ratio: 9 / 16;"
+                ></video>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. GRID DE CAPACIDADES TÉCNICAS (BENTO GRID) + PREVISUALIZADOR CAD -->
+    <section id="capacidades" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-800/70">
+      <div class="max-w-3xl mb-10">
+        <span class="telemetry-pill mb-3">
+          <span class="pulse-dot"></span>
+          ARQUITECTURA GEOMÁTICA INTEGRAL
+        </span>
+        <h2 class="font-display font-bold text-3xl sm:text-4xl text-white">
+          Capacidades Técnicas Diseñadas para <span class="text-emerald-400">Precisión de Campo y Gabinete</span>
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <!-- Bento 1: Motor RIGIDA02 & PATVEN-98 (7 cols) -->
+        <div class="md:col-span-7 tech-card crosshair-corners p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-4">
+              <span class="px-2.5 py-1 rounded-md bg-cyan-500/15 border border-cyan-500/30 font-mono text-[11px] font-bold text-cyan-300">
+                MOTOR RIGIDA02 &amp; PATVEN-98
+              </span>
+              <span class="font-mono text-xs text-emerald-400 font-bold">QA/QC ≤ 0.001 m</span>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white">
+              Transformación Bidireccional Hayford 1924 ↔ GRS80 sin Deformación de Linderos
+            </h3>
+            <p class="text-sm text-slate-400 mt-2 leading-relaxed">
+              Combina la cadena elipsoidal tridimensional <strong>Molodensky-Badekas</strong> con los 7 parámetros oficiales del <strong>IGVSB (PATVEN-98)</strong>, malla espacial <strong>IDW</strong> de 50 vértices homólogos y el motor local <strong>RIGIDA02</strong> con auditoría automática de invarianza euclidiana.
+            </p>
+          </div>
+          <div class="mt-5 p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 font-mono text-[11px] text-slate-300 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div><span class="text-slate-500 block text-[9px]">dX / dY / dZ</span>-270.93 / +115.60 / -360.23</div>
+            <div><span class="text-slate-500 block text-[9px]">ROTACIONES (")</span>rx:-5.27 ry:-1.24 rz:+2.38</div>
+            <div><span class="text-slate-500 block text-[9px]">ADÍCORA AL-318</span>ΔE:-204.33 ΔN:-311.54</div>
+            <div><span class="text-slate-500 block text-[9px]">ESCALA / GEOIDAL</span>dS:-5.11 ppm | Z:-22.45 m</div>
+          </div>
+        </div>
+
+        <!-- Bento 2: Visor Satelital & Replanteo Móvil/AR (5 cols) -->
+        <div class="md:col-span-5 tech-card crosshair-corners p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-4">
+              <span class="px-2.5 py-1 rounded-md bg-emerald-500/15 border border-emerald-500/30 font-mono text-[11px] font-bold text-emerald-300">
+                VISOR OPENLAYERS + MÓVIL AR
+              </span>
+              <span class="font-mono text-xs text-cyan-300">EPSG:2201–2204</span>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white">
+              Replanteo GNSS, Brújula y Proyección AR en Terreno
+            </h3>
+            <p class="text-sm text-slate-400 mt-2 leading-relaxed">
+              Visualización inmediata sobre satélite Google/ESRI y vialidad con herramientas táctiles de medición, desplazamiento controlado de parcelas y módulo de navegación de vértices con sensores inerciales y vista AR en evolución hacia GeoGIS6.
+            </p>
+          </div>
+          <!-- Mini field HUD graphic -->
+          <div class="mt-5 p-3.5 rounded-xl bg-slate-950/90 border border-emerald-500/25 flex items-center justify-between gap-3">
+            <div class="space-y-1 font-mono text-[11px]">
+              <div class="text-emerald-400 font-bold">TARGET: VERTICE P1 (REGVEN)</div>
+              <div class="text-slate-300">AZ: <span class="text-cyan-300">213.26°</span> · ΔD: <span class="text-amber-300">372.57 m</span></div>
+            </div>
+            <div class="w-11 h-11 rounded-full border-2 border-emerald-400/60 flex items-center justify-center relative shrink-0">
+              <div class="w-6 h-6 rounded-full border border-cyan-400/70"></div>
+              <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 absolute"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bento 3: Exportación Nativa DXF / CivilCAD + Live Preview (8 cols) -->
+        <div class="md:col-span-8 tech-card crosshair-corners p-6">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <span class="px-2.5 py-1 rounded-md bg-amber-500/15 border border-amber-500/30 font-mono text-[11px] font-bold text-amber-300">
+                SALIDA NATIVA CAD / CIVILCAD / PLANIMETRÍA
+              </span>
+              <h3 class="font-display font-bold text-xl text-white mt-2">
+                Cuadro de Construcción Topográfico y Exportación Automática
+              </h3>
+            </div>
+            <div class="flex gap-1.5 p-1 rounded-xl bg-slate-950 border border-slate-800">
+              <button type="button" data-cad-tab="tabla" data-active="true" class="tab-btn px-3 py-1 rounded-lg font-mono text-[11px] font-bold border border-transparent text-slate-400">Cuadro</button>
+              <button type="button" data-cad-tab="civilcad" data-active="false" class="tab-btn px-3 py-1 rounded-lg font-mono text-[11px] font-bold border border-transparent text-slate-400">P,E,N,Z,D</button>
+              <button type="button" data-cad-tab="dxf" data-active="false" class="tab-btn px-3 py-1 rounded-lg font-mono text-[11px] font-bold border border-transparent text-slate-400">Código DXF</button>
+            </div>
+          </div>
+
+          <!-- Synced Polygon Summary -->
+          <div class="flex flex-wrap items-center justify-between gap-3 px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800 mb-3 font-mono text-xs">
+            <div><span class="text-slate-500">ÁREA POLIGONAL:</span> <span id="cad-preview-area" class="text-emerald-400 font-bold">—</span></div>
+            <div><span class="text-slate-500">PERÍMETRO:</span> <span id="cad-preview-perim" class="text-cyan-300 font-bold">—</span></div>
+            <div><span class="text-slate-500">CAPAS:</span> <span class="text-amber-300">VERTICES, LINDEROS, CUADRO_CONSTRUCCION</span></div>
+          </div>
+
+          <div id="cad-table-wrap" class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/70">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-900/90 text-slate-400 font-mono uppercase text-[10px] border-b border-slate-800">
+                <tr>
+                  <th class="py-2.5 px-3">Vértice</th>
+                  <th class="py-2.5 px-3">Este (X)</th>
+                  <th class="py-2.5 px-3">Norte (Y)</th>
+                  <th class="py-2.5 px-3">Rumbo Calculado</th>
+                  <th class="py-2.5 px-3">Distancia</th>
+                </tr>
+              </thead>
+              <tbody id="cad-table-body"></tbody>
+            </table>
+          </div>
+
+          <div id="cad-code-wrap" class="hidden rounded-xl border border-slate-800 bg-slate-950 p-4 overflow-x-auto">
+            <pre id="cad-code-preview" class="font-mono text-xs text-emerald-300 leading-relaxed m-0"></pre>
+          </div>
+        </div>
+
+        <!-- Bento 4: Offline-First & Cloud Telemetry (4 cols) -->
+        <div class="md:col-span-4 tech-card crosshair-corners p-6 flex flex-col justify-between">
+          <div>
+            <span class="px-2.5 py-1 rounded-md bg-emerald-500/15 border border-emerald-500/30 font-mono text-[11px] font-bold text-emerald-300">
+              100% OFFLINE-FIRST + NUBE
+            </span>
+            <h3 class="font-display font-bold text-xl text-white mt-3">
+              Trabajo Autónomo en Zonas Remotas
+            </h3>
+            <p class="text-sm text-slate-400 mt-2 leading-relaxed">
+              El motor matemático y la persistencia local (<code class="font-mono text-xs text-cyan-300">geotrans-offline-v1</code>) operan sin señal celular en campos petroleros o fincas rurales, sincronizando proyectos y curvas altimétricas al reconectar.
+            </p>
+          </div>
+          <div class="mt-5 space-y-2 font-mono text-[11px]">
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/90 border border-slate-800">
+              <span class="text-slate-400">Importación Masiva</span>
+              <span class="text-emerald-400">.CSV / .TXT / .DXF</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/90 border border-slate-800">
+              <span class="text-slate-400">Hojas de Mensura</span>
+              <span class="text-cyan-300">PDF + Curvas Nivel</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/90 border border-slate-800">
+              <span class="text-slate-400">Verificación GIS</span>
+              <span class="text-amber-300">.KML / .KMZ / QGIS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. FLUJO DE TRABAJO: DEL CAMPO AL PLANO EN 3 PASOS -->
+    <section id="flujo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-800/70">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="telemetry-pill mb-3">
+          <span class="pulse-dot"></span>
+          NORMATIVA IGVSB · SAREN · SUNAC · PDVSA
+        </span>
+        <h2 class="font-display font-bold text-3xl sm:text-4xl text-white">
+          Del Campo al Plano Certificado en <span class="text-cyan-400">3 Pasos</span>
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="tech-card crosshair-corners p-6 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-2xl font-bold text-emerald-400">01</span>
+            <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">INGESTA &amp; AUDITORÍA</span>
+          </div>
+          <h3 class="font-display font-bold text-lg text-white">Captura o Importación Versátil</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Carga puntos individuales en el celular, pega lotes de carteras topográficas <code class="font-mono text-xs text-emerald-300">.CSV/.TXT</code> o importa archivos <code class="font-mono text-xs text-cyan-300">.DXF</code>. El motor detecta automáticamente coordenadas transpuestas Norte/Este.
+          </p>
+        </div>
+
+        <div class="tech-card crosshair-corners p-6 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-2xl font-bold text-cyan-400">02</span>
+            <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">BADEKAS / RIGIDA02</span>
+          </div>
+          <h3 class="font-display font-bold text-lg text-white">Transformación &amp; Validación QA/QC</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Ejecuta conversión bidireccional La Canoa ↔ REGVEN mediante <strong>PATVEN-98</strong>, malla <strong>IDW</strong> o traslación rígida pura <strong>RIGIDA02</strong> verificando la distancia euclidiana entre todos los pares de vértices (tolerancia ≤ 0.001 m).
+          </p>
+        </div>
+
+        <div class="tech-card crosshair-corners p-6 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-2xl font-bold text-amber-400">03</span>
+            <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">CAD &amp; MENSURA</span>
+          </div>
+          <h3 class="font-display font-bold text-lg text-white">Entregable Certificado Listo</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Genera planos <code class="font-mono text-xs text-cyan-300">.DXF</code> con capas normalizadas, cuadros de construcción, coordenadas <code class="font-mono text-xs text-emerald-300">P,E,N,Z,D</code> para CivilCAD, rutas <code class="font-mono text-xs text-amber-300">.KML</code> satelitales y planos altimétricos con curvas de nivel.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. ARQUITECTURA EMPRESARIAL Y SEGURIDAD (RBAC & DEVICE BINDING) -->
+    <section id="seguridad" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-800/70">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div class="lg:col-span-5 space-y-4">
+          <span class="telemetry-pill">
+            <span class="pulse-dot"></span>
+            SEGURIDAD EMPRESARIAL
+          </span>
+          <h2 class="font-display font-bold text-3xl text-white">
+            Control de Cuadrillas <span class="text-emerald-400">RBAC</span> &amp; Protección <span class="text-cyan-400">Device Binding</span>
+          </h2>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Diseñado para consultoras topográficas, ingenierías y entes catastrales. Cada sesión valida firma criptográfica <strong>JWT</strong>, huella de dispositivo autorizada (<code class="font-mono text-xs text-cyan-300">x-device-id</code>), prevención de uso simultáneo multi-IP y matriz granular de permisos.
+          </p>
+          <div class="space-y-2.5 pt-2">
+            <div class="tech-card p-3.5 flex items-start gap-3">
+              <span class="w-2 h-2 mt-1.5 rounded-full bg-emerald-400 shrink-0"></span>
+              <div>
+                <div class="text-xs font-bold text-white uppercase tracking-wider">Vinculación de Hardware (Device Binding)</div>
+                <p class="text-xs text-slate-400 mt-0.5">Bloqueo automático de sesiones excedentes y revocación instantánea de equipos desde el panel de administración.</p>
+              </div>
+            </div>
+            <div class="tech-card p-3.5 flex items-start gap-3">
+              <span class="w-2 h-2 mt-1.5 rounded-full bg-cyan-400 shrink-0"></span>
+              <div>
+                <div class="text-xs font-bold text-white uppercase tracking-wider">Protección de Entregables en Modo Demo</div>
+                <p class="text-xs text-slate-400 mt-0.5">Marca de agua automática en capa dedicada DXF, tope de 20 vértices y restricción de copiado/impresión en cuentas de evaluación.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real RBAC Matrix from src/types/auth.ts -->
+        <div class="lg:col-span-7 tech-card crosshair-corners p-5 sm:p-6 overflow-x-auto">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-display font-bold text-base text-white">Matriz Real de Roles y Privilegios</h3>
+            <span class="font-mono text-[10px] text-slate-400">JWT HttpOnly + PostgreSQL/Supabase</span>
+          </div>
+          <table class="w-full text-left text-xs">
+            <thead class="border-b border-slate-800 text-slate-400 font-mono uppercase text-[10px]">
+              <tr>
+                <th class="py-2.5 pr-3">Capacidad / Módulo</th>
+                <th class="py-2.5 px-2 text-center text-emerald-400">Admin</th>
+                <th class="py-2.5 px-2 text-center text-cyan-300">Revisor (Senior)</th>
+                <th class="py-2.5 px-2 text-center text-slate-200">Operador Campo</th>
+                <th class="py-2.5 pl-2 text-center text-amber-300">Modo Demo</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/70">
+              <tr>
+                <td class="py-2.5 pr-3 text-slate-200">Máx. vértices por cálculo</td>
+                <td class="py-2.5 px-2 text-center font-mono text-emerald-300">Ilimitado</td>
+                <td class="py-2.5 px-2 text-center font-mono text-cyan-300">10,000</td>
+                <td class="py-2.5 px-2 text-center font-mono text-slate-300">2,000</td>
+                <td class="py-2.5 pl-2 text-center font-mono text-amber-300">20</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 pr-3 text-slate-200">Dispositivos autorizados</td>
+                <td class="py-2.5 px-2 text-center font-mono text-emerald-300">10</td>
+                <td class="py-2.5 px-2 text-center font-mono text-cyan-300">1</td>
+                <td class="py-2.5 px-2 text-center font-mono text-slate-300">1</td>
+                <td class="py-2.5 pl-2 text-center font-mono text-amber-300">1</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 pr-3 text-slate-200">Transformación + QA/QC RIGIDA02</td>
+                <td class="py-2.5 px-2 text-center text-emerald-400">✔</td>
+                <td class="py-2.5 px-2 text-center text-emerald-400">✔</td>
+                <td class="py-2.5 px-2 text-center text-emerald-400">✔</td>
+                <td class="py-2.5 pl-2 text-center text-emerald-400">✔</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 pr-3 text-slate-200">Exportación CAD (.DXF)</td>
+                <td class="py-2.5 px-2 text-center text-emerald-400">✔ Puro</td>
+                <td class="py-2.5 px-2 text-center text-emerald-400">✔ Puro</td>
+                <td class="py-2.5 px-2 text-center text-emerald-400">✔ Puro</td>
+                <td class="py-2.5 pl-2 text-center text-amber-300">Marca Agua</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 pr-3 text-slate-200">Edición Datum / PDF / Mensura</td>
+                <td class="py-2.5 px-2 text-center text-emerald-400">✔</td>
+                <td class="py-2.5 px-2 text-center text-emerald-400">✔</td>
+                <td class="py-2.5 px-2 text-center text-slate-600">—</td>
+                <td class="py-2.5 pl-2 text-center text-slate-600">—</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 pr-3 text-slate-200">Gestión Usuarios y Dispositivos</td>
+                <td class="py-2.5 px-2 text-center text-emerald-400">✔</td>
+                <td class="py-2.5 px-2 text-center text-slate-600">—</td>
+                <td class="py-2.5 px-2 text-center text-slate-600">—</td>
+                <td class="py-2.5 pl-2 text-center text-slate-600">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. SECCIÓN DE ACCESO, REQUISITOS Y CTA FINAL -->
+    <section id="contacto" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-800/70">
+      <div class="tech-card crosshair-corners p-6 sm:p-10 bg-gradient-to-br from-slate-900/95 via-[#0B1424] to-emerald-950/30">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div class="lg:col-span-6 space-y-4">
+            <span class="telemetry-pill">
+              <span class="pulse-dot"></span>
+              DESPLIEGUE WEB &amp; MÓVIL EN PROGRESO
+            </span>
+            <h2 class="font-display font-bold text-3xl sm:text-4xl text-white">
+              Lleva <span class="text-emerald-400">GeoGIS6</span> a tu Próximo Levantamiento
+            </h2>
+            <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+              Accede ahora a la versión operativa actual (<strong>GeoTransformer v6.0 Mobile</strong>) o solicita una licencia corporativa para tu equipo de topografía, catastro o ingeniería civil.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 font-mono text-xs text-slate-300">
+              <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+                <span class="text-emerald-400 font-bold block">ESTACIÓN WEB</span>
+                Chrome / Edge / Safari · Visor OpenLayers 10 GPU
+              </div>
+              <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+                <span class="text-cyan-400 font-bold block">CAMPO MÓVIL</span>
+                Android 10+ / iOS · GPS &amp; Sensores Inerciales AR
+              </div>
+            </div>
+            <div class="pt-2 flex flex-wrap gap-3">
+              <a
+                data-env-url="desktop"
+                href="https://geotransformer-monolith-fniu.onrender.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all"
+              >
+                Abrir Estación Desktop
+              </a>
+              <a
+                data-env-url="apk"
+                href="/downloads/GeoGis6_Android.apk"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all"
+              >
+                Descargar App Android (.APK)
+              </a>
+              <a
+                data-env-url="admin"
+                href="http://localhost:4000"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-xs uppercase tracking-wider transition-all"
+              >
+                Panel Admin
+              </a>
+            </div>
+          </div>
+
+          <div class="lg:col-span-6">
+            <form id="inline-contact-form" class="p-5 sm:p-6 rounded-2xl bg-[#070B14]/90 border border-slate-800 space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="font-display font-bold text-base text-white">Solicitar Demo o Licencia Corporativa</h3>
+                <span class="font-mono text-[10px] text-emerald-400">RESPUESTA TÉCNICA</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Nombre / Ingeniero</label>
+                  <input name="nombre" type="text" required placeholder="Ing. Carlos Mendoza" class="sim-input text-slate-200 font-sans text-sm" />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Correo Electrónico</label>
+                  <input name="email" type="email" required placeholder="topografia@empresa.com" class="sim-input text-slate-200 font-sans text-sm" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Perfil / Licencia</label>
+                  <select name="plan" class="sim-input text-cyan-300 font-mono text-xs">
+                    <option value="Operador de Campo">Operador de Campo (1 Disp.)</option>
+                    <option value="Revisor Catastral">Revisor Catastral QA/QC</option>
+                    <option value="Cuadrilla Corporativa Admin">Cuadrilla Corporativa (10 Disp.)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Estado / Huso UTM</label>
+                  <input name="region" type="text" placeholder="Ej. Falcón / Huso 19N" class="sim-input text-slate-200 font-sans text-sm" />
+                </div>
+              </div>
+              <button
+                type="submit"
+                class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+              >
+                Enviar Solicitud de Acceso GeoGIS6
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER TÉCNICO -->
+  <footer class="relative z-10 border-t border-slate-800/80 bg-[#05080F]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div class="space-y-1.5">
+        <div class="flex items-center gap-2">
+          <span class="font-display font-bold text-white">Geo<span class="text-emerald-400">GIS6</span></span>
+          <span class="font-mono text-[11px] text-slate-400">v6.0 Mobile · Engine: GeoTransformer v6.0</span>
+        </div>
+        <p class="font-mono text-[11px] text-slate-500">
+          Elipsoides: Internacional 1924 (Hayford / PSAD56) &amp; GRS80 (SIRGAS-REGVEN) · Marco PATVEN-98 IGVSB
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-5 text-xs text-slate-400">
+        <a href="#hero" class="hover:text-emerald-400 transition-colors">Simulador</a>
+        <a href="#capturas" class="hover:text-cyan-400 transition-colors">Web &amp; Celular</a>
+        <a href="#capacidades" class="hover:text-emerald-400 transition-colors">CAD / DXF</a>
+        <a href="#seguridad" class="hover:text-cyan-400 transition-colors">Seguridad RBAC</a>
+        <a data-env-url="desktop" href="https://geotransformer-monolith-fniu.onrender.com/" target="_blank" rel="noopener noreferrer" class="text-cyan-300 font-semibold hover:underline">Estación Desktop ↗</a>
+        <a data-env-url="apk" href="/downloads/GeoGis6_Android.apk" target="_blank" rel="noopener noreferrer" class="text-emerald-400 font-semibold hover:underline">Android APK ↗</a>
+        <a data-env-url="admin" href="http://localhost:4000" target="_blank" rel="noopener noreferrer" class="text-slate-300 font-semibold hover:underline">Panel Admin ↗</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- LIGHTBOX MODAL FOR FULLSCREEN SCREENSHOT INSPECTION -->
+  <div id="lightbox-modal" class="lightbox-backdrop" role="dialog" aria-modal="true" aria-label="Vista ampliada de captura">
+    <div class="relative w-full max-w-6xl bg-[#0B1120] border border-cyan-500/30 rounded-2xl overflow-hidden shadow-2xl">
+      <div class="flex items-center justify-between px-4 py-3 bg-slate-900/95 border-b border-slate-800">
+        <div>
+          <span id="lightbox-tag" class="font-mono text-[10px] font-bold text-emerald-400 uppercase"></span>
+          <h3 id="lightbox-title" class="font-display font-bold text-sm sm:text-base text-white"></h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="lightbox-counter" class="font-mono text-xs text-slate-400 mr-2">1 / 4</span>
+          <button id="lightbox-prev" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-200">← Anterior</button>
+          <button id="lightbox-next" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-200">Siguiente →</button>
+          <button id="lightbox-close" type="button" aria-label="Cerrar" class="p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 ml-1">✕</button>
+        </div>
+      </div>
+      <div class="bg-[#05080F] flex items-center justify-center p-3 max-h-[76vh] overflow-auto">
+        <img id="lightbox-img" src="" alt="" class="max-h-[72vh] w-auto rounded-lg border border-slate-800 shadow-2xl" />
+      </div>
+      <div class="px-4 py-3 bg-slate-900/90 border-t border-slate-800">
+        <p id="lightbox-desc" class="text-xs text-slate-300"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LICENSE REQUEST MODAL -->
+  <div id="license-modal" class="lightbox-backdrop" role="dialog" aria-modal="true" aria-label="Solicitar Licencia GeoGIS6">
+    <div class="w-full max-w-md bg-[#0F172A] border border-emerald-500/35 rounded-2xl p-6 shadow-2xl relative crosshair-corners">
+      <button id="license-modal-close" type="button" class="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
+      <span class="font-mono text-[10px] font-bold text-emerald-400 uppercase tracking-wider">LICENCIAMIENTO &amp; DEMO</span>
+      <h3 class="font-display font-bold text-xl text-white mt-1">Solicitar Licencia GeoGIS6</h3>
+      <p class="text-xs text-slate-400 mt-1">Activa tu estación web y dispositivos de campo con Device Binding.</p>
+      <form id="license-request-form" class="space-y-3.5 mt-5">
+        <div>
+          <label class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Nombre completo</label>
+          <input name="nombre" type="text" required placeholder="Ing. / Agrimensor" class="sim-input text-slate-200 font-sans text-sm" />
+        </div>
+        <div>
+          <label class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Correo profesional</label>
+          <input name="email" type="email" required placeholder="nombre@consultora.com" class="sim-input text-slate-200 font-sans text-sm" />
+        </div>
+        <div>
+          <label class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Tipo de Licencia</label>
+          <select name="plan" class="sim-input text-cyan-300 font-mono text-xs">
+            <option value="Operador de Campo">Operador de Campo (1 Dispositivo)</option>
+            <option value="Revisor Catastral QA/QC">Revisor Catastral QA/QC</option>
+            <option value="Corporativo Admin (10 Disp.)">Corporativo Admin (10 Dispositivos)</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-widest">
+          Confirmar Solicitud
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="env-config.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
