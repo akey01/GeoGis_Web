@@ -89,6 +89,10 @@ const server = http.createServer((req, res) => {
 
   const ext = path.extname(fileToServe).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+  const extraHeaders =
+    ext === '.apk'
+      ? { 'Content-Disposition': 'attachment; filename="GeoGis6_Android.apk"' }
+      : {};
   const stat = fs.statSync(fileToServe);
   const total = stat.size;
   const range = req.headers.range;
@@ -113,6 +117,7 @@ const server = http.createServer((req, res) => {
       'Content-Length': end - start + 1,
       'Content-Type': contentType,
       'Cache-Control': 'no-cache',
+      ...extraHeaders,
     });
     fs.createReadStream(fileToServe, { start, end }).pipe(res);
     return;
@@ -123,6 +128,7 @@ const server = http.createServer((req, res) => {
     'Content-Length': total,
     'Content-Type': contentType,
     'Cache-Control': 'no-cache',
+    ...extraHeaders,
   });
   fs.createReadStream(fileToServe).pipe(res);
 });
