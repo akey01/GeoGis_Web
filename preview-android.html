@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="shell-type" content="mobile_tab" />
-  <title>GeoGIS6 Mobile — Topografía GNSS, Localizador de Parcelas &amp; CAD</title>
+  <title>GeoGIS6 Mobile — Parcelas, Proyectos, Cloud &amp; GNSS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -79,13 +79,13 @@
 </head>
 <body class="bg-[#050914] text-[#dae2fd] antialiased select-none">
   <!-- Toast Feedback -->
-  <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-[150] hidden px-3.5 py-2 rounded-xl bg-[#131b2e]/95 border border-[#4edea3]/50 text-[#4edea3] font-mono text-[11px] shadow-2xl backdrop-blur-md text-center max-w-[90vw]"></div>
+  <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-[180] hidden px-3.5 py-2 rounded-xl bg-[#131b2e]/95 border border-[#4edea3]/50 text-[#4edea3] font-mono text-[11px] shadow-2xl backdrop-blur-md text-center max-w-[90vw]"></div>
 
-  <!-- Desktop Preview Toolbar (hidden automatically inside mobile phones / Capacitor APK) -->
+  <!-- Desktop Preview Toolbar -->
   <div id="desktop-bar" class="hidden w-full max-w-[960px] mb-2.5 px-3 py-1.5 bg-[#0b1326] border border-[#222a3d] rounded-xl items-center justify-between gap-2">
     <div class="flex items-center gap-2">
       <span class="px-2 py-0.5 rounded bg-[#4cd7f6]/15 border border-[#4cd7f6]/30 font-mono text-[10px] font-bold text-[#4cd7f6]">GEOGIS6 ANDROID APP</span>
-      <span class="text-xs text-[#bcc9cd]">Stitch Fidelity Dark + Mobile Topographer + Localizador de Parcelas</span>
+      <span class="text-xs text-[#bcc9cd]">Parcelas Desktop + Proyectos Cloud + Login + OTA Auto-Update</span>
     </div>
     <div class="flex items-center gap-2">
       <button id="btn-toggle-desktop-frame" type="button" class="px-2.5 py-1 rounded-lg bg-[#171f33] border border-[#2d3449] font-mono text-[11px] text-[#4cd7f6]">Pantalla Completa</button>
@@ -96,33 +96,36 @@
   <div id="app-shell">
     <!-- 1. COMPACT ANDROID HEADER & RTK TRAY -->
     <header class="shrink-0 bg-[#0b1326]/95 backdrop-blur-xl border-b border-[#222a3d] z-40">
-      <div class="h-12 px-3 flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2 min-w-0">
-          <div id="gps-badge" class="flex items-center gap-1 px-2 py-0.5 rounded border bg-[#ffb95f]/15 border-[#ffb95f]/40 text-[#ffb95f] shrink-0">
+      <div class="h-12 px-2.5 flex items-center justify-between gap-1.5">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <div id="gps-badge" class="flex items-center gap-1 px-1.5 py-0.5 rounded border bg-[#ffb95f]/15 border-[#ffb95f]/40 text-[#ffb95f] shrink-0">
             <span id="gps-dot" class="w-1.5 h-1.5 rounded-full bg-[#ffb95f] animate-pulse"></span>
-            <span id="gps-badge-text" class="font-mono text-[9px] font-bold uppercase">GNSS</span>
+            <span id="gps-badge-text" class="font-mono text-[8.5px] font-bold uppercase">GNSS</span>
           </div>
           <div class="min-w-0">
-            <div id="header-parcel-name" class="text-xs font-bold text-[#dae2fd] truncate leading-tight">PARCELA-09B</div>
-            <div id="header-parcel-stats" class="font-mono text-[9px] text-[#869397] truncate">Calculando área...</div>
+            <div id="header-parcel-name" class="text-[11.5px] font-bold text-[#dae2fd] truncate leading-tight">PARCELA-09B</div>
+            <div id="header-parcel-stats" class="font-mono text-[8.5px] text-[#869397] truncate">Calculando área...</div>
           </div>
         </div>
 
-        <div class="flex items-center gap-1.5 shrink-0">
-          <button id="btn-cloud-sync" type="button" class="px-2 py-1 rounded-lg bg-[#171f33] border border-[#2d3449] font-mono text-[9px] font-bold text-[#4edea3]" title="Estado servidor Render GeoGIS6">
-            NUBE
+        <div class="flex items-center gap-1 shrink-0">
+          <button id="btn-ota-header" type="button" class="px-1.5 py-1 rounded-lg bg-[#171f33] border border-[#2d3449] font-mono text-[8.5px] font-bold text-[#bcc9cd] active:scale-95" title="Versión APK y Actualizaciones Automáticas">
+            v6.0.9
           </button>
-          <button id="btn-toggle-dir" type="button" class="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#171f33] border border-[#2d3449] active:scale-95">
-            <span class="text-[#ffb95f] font-mono text-[10px]">⇄</span>
-            <span id="dir-badge" class="font-mono text-[9px] font-bold text-[#4cd7f6]">PSAD56➔REGVEN</span>
+          <button id="btn-auth-header" type="button" class="px-1.5 py-1 rounded-lg bg-[#171f33] border border-[#2d3449] font-mono text-[8.5px] font-bold text-[#4edea3] active:scale-95 max-w-[92px] truncate" title="Cuenta y Login GeoGIS6">
+            🔐 Login
+          </button>
+          <button id="btn-toggle-dir" type="button" class="flex items-center gap-0.5 px-1.5 py-1 rounded-lg bg-[#171f33] border border-[#2d3449] active:scale-95">
+            <span class="text-[#ffb95f] font-mono text-[9px]">⇄</span>
+            <span id="dir-badge" class="font-mono text-[8px] font-bold text-[#4cd7f6]">PSAD56➔REG</span>
           </button>
         </div>
       </div>
 
-      <div class="px-3 py-1.5 bg-[#060e20] border-t border-[#171f33] flex items-center justify-between gap-1 font-mono text-[9px]">
+      <div class="px-2.5 py-1 bg-[#060e20] border-t border-[#171f33] flex items-center justify-between gap-1 font-mono text-[8.5px]">
         <span id="method-huso-chip" class="px-1.5 py-0.5 rounded bg-[#171f33] text-[#4edea3] font-bold">RIGIDA02 • 19N</span>
-        <span class="text-[#dae2fd]">🛰 SV 8/12</span>
-        <button id="btn-toggle-map-engine" type="button" class="px-2 py-0.5 rounded bg-[#4cd7f6]/15 text-[#4cd7f6] font-bold">Vector HUD</button>
+        <span id="header-project-chip" class="text-[#bcc9cd] truncate max-w-[115px]">📁 Nuevo Proyecto</span>
+        <button id="btn-toggle-map-engine" type="button" class="px-1.5 py-0.5 rounded bg-[#4cd7f6]/15 text-[#4cd7f6] font-bold">Vector HUD</button>
         <button id="btn-cycle-layer" type="button" class="px-1.5 py-0.5 rounded bg-[#222a3d] text-[#ffb95f] font-bold">Satélite</button>
       </div>
     </header>
@@ -131,10 +134,8 @@
     <main class="relative flex-1 min-h-0 overflow-hidden bg-[#060e20]">
       <!-- VIEW 1: MAPA HUD -->
       <section id="view-map" class="relative w-full h-full">
-        <!-- Leaflet Real Satellite Map -->
         <div id="leaflet-map" class="absolute inset-0 w-full h-full z-10"></div>
 
-        <!-- Stitch Tactical SVG Vector Canvas Fallback / HUD -->
         <div id="stitch-svg-wrap" class="hidden-view absolute inset-0 w-full h-full z-10 overflow-hidden bg-[#060e20]">
           <svg id="stitch-svg" viewBox="0 0 360 400" preserveAspectRatio="xMidYMid meet" class="w-full h-full">
             <defs>
@@ -164,17 +165,15 @@
         </div>
 
         <!-- Ergonomic Right-Edge FAB Stack -->
-        <div class="absolute top-10 right-2.5 z-20 flex flex-col items-center gap-1.5">
-          <button id="fab-capture" type="button" class="w-12 h-12 p-2 rounded-full bg-[#4cd7f6] active:scale-95 text-[#003640] shadow-xl flex flex-col items-center justify-center">
+        <div class="absolute top-6 right-2.5 z-20 flex flex-col items-center gap-1.5">
+          <button id="fab-capture" type="button" class="w-12 h-12 p-1.5 rounded-full bg-[#4cd7f6] active:scale-95 text-[#003640] shadow-xl flex flex-col items-center justify-center">
             <span class="font-bold text-base leading-none">+</span>
-            <span class="font-mono text-[7.5px] font-extrabold uppercase leading-none">GRABAR</span>
+            <span class="font-mono text-[7px] font-extrabold uppercase leading-none">GRABAR</span>
           </button>
+          <button id="fab-save-parcel" type="button" class="w-9 h-9 rounded-full bg-[#4edea3]/95 border border-[#003824] text-[#003824] flex items-center justify-center shadow-lg font-mono text-xs font-bold" title="Guardar Parcela en Proyecto">💾</button>
           <button id="fab-center-gps" type="button" class="w-9 h-9 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#4edea3] flex items-center justify-center shadow-lg font-mono text-sm" title="Centrar GPS Real">⌖</button>
           <button id="fab-goto-locate" type="button" class="w-9 h-9 rounded-full bg-[#171f33]/95 border border-[#ffb95f]/40 text-[#ffb95f] flex items-center justify-center shadow-lg font-mono text-sm" title="Localizar Parcela">🎯</button>
-          <button id="fab-goto-topo" type="button" class="w-9 h-9 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#4cd7f6] flex flex-col items-center justify-center shadow-lg">
-            <span class="font-mono text-[8px] font-bold">GNSS</span>
-          </button>
-          <button id="fab-layers" type="button" class="w-9 h-9 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#dae2fd] flex items-center justify-center shadow-lg font-mono text-xs">▤</button>
+          <button id="fab-layers" type="button" class="w-9 h-9 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#dae2fd] flex items-center justify-center shadow-lg font-mono text-xs" title="Cambiar Capa">▤</button>
         </div>
 
         <!-- Live Rover Telemetry Tray -->
@@ -197,11 +196,11 @@
       <!-- VIEW 3: PARCEL COORDINATE LOCATOR + DRIVE-ME STAKEOUT -->
       <section id="view-locate" class="hidden-view h-full overflow-y-auto p-3 space-y-3"></section>
 
-      <!-- VIEW 4: VERTICES & MOTOR QA/QC -->
-      <section id="view-vertices" class="hidden-view h-full overflow-y-auto p-3 space-y-3"></section>
+      <!-- VIEW 4: PARCELAS (DESKTOP PARITY) & VERTICES QA/QC -->
+      <section id="view-parcels" class="hidden-view h-full overflow-y-auto p-3 space-y-3"></section>
 
-      <!-- VIEW 5: EXPORT CAD / KML / CLOUD -->
-      <section id="view-export" class="hidden-view h-full overflow-y-auto p-3 space-y-2.5"></section>
+      <!-- VIEW 5: PROYECTOS, LOGIN CLOUD, EXPORT & AUTO-UPDATE OTA -->
+      <section id="view-projects" class="hidden-view h-full overflow-y-auto p-3 space-y-3"></section>
     </main>
 
     <!-- 3. NATIVE ANDROID BOTTOM NAVIGATION BAR (5 MODULES) -->
@@ -218,19 +217,49 @@
         <div class="nav-pill flex items-center justify-center w-9 h-6 rounded-full text-sm">🎯</div>
         <span class="font-mono text-[8px] font-bold uppercase tracking-wider mt-0.5">Localizar</span>
       </button>
-      <button data-tab="vertices" type="button" class="nav-btn text-[#bcc9cd] flex flex-col items-center justify-center">
+      <button data-tab="parcels" type="button" class="nav-btn text-[#bcc9cd] flex flex-col items-center justify-center">
         <div class="nav-pill flex items-center justify-center w-9 h-6 rounded-full text-sm">📐</div>
-        <span class="font-mono text-[8px] font-bold uppercase tracking-wider mt-0.5">Vértices</span>
+        <span class="font-mono text-[8px] font-bold uppercase tracking-wider mt-0.5">Parcelas</span>
       </button>
-      <button data-tab="export" type="button" class="nav-btn text-[#bcc9cd] flex flex-col items-center justify-center">
-        <div class="nav-pill flex items-center justify-center w-9 h-6 rounded-full text-sm">⬇</div>
-        <span class="font-mono text-[8px] font-bold uppercase tracking-wider mt-0.5">Exportar</span>
+      <button data-tab="projects" type="button" class="nav-btn text-[#bcc9cd] flex flex-col items-center justify-center">
+        <div class="nav-pill flex items-center justify-center w-9 h-6 rounded-full text-sm">📁</div>
+        <span class="font-mono text-[8px] font-bold uppercase tracking-wider mt-0.5">Proyectos</span>
       </button>
     </nav>
+
+    <!-- MODAL ROOT (LOGIN, EDIT PARCEL METADATA, MULTI-PARCEL SUMMARY, OTA UPDATE) -->
+    <div id="modal-root" class="hidden fixed inset-0 z-[160] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-2.5"></div>
   </div>
 
   <script>
     const CLOUD_URL = 'https://geogis6-android.onrender.com';
+    const APK_DOWNLOAD_DEFAULT_URL = 'https://github.com/akey01/GeoGis_Android/releases/latest/download/GeoGis6_Android.apk';
+    const GITHUB_RELEASE_API_URL = 'https://api.github.com/repos/akey01/GeoGis_Android/releases/latest';
+    const APP_VERSION_CODE = 609;
+    const APP_VERSION_NAME = '6.0.9';
+    window.__GEOGIS_APK_VERSION__ = { versionCode: APP_VERSION_CODE, versionName: APP_VERSION_NAME };
+
+    const STORAGE_KEY_WORKSPACE = 'geogis6_android_workspace_v2';
+    const STORAGE_KEY_AUTH = 'geogis6_android_auth_v1';
+    const STORAGE_KEY_LOCAL_PROJECTS = 'geogis6_android_local_projects_v1';
+    const STORAGE_KEY_DEVICE = 'gt_device_id';
+
+    function getOrCreateDeviceId() {
+      let id = localStorage.getItem(STORAGE_KEY_DEVICE);
+      if (!id || id.length < 8) {
+        id = 'apk_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now().toString(36);
+        localStorage.setItem(STORAGE_KEY_DEVICE, id);
+      }
+      return id;
+    }
+
+    function escapeHtml(val) {
+      return String(val ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
 
     // Desktop frame setup (only outside Capacitor, outside Stitch iframe, and >= 768px)
     const isCapacitorNative = Boolean(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
@@ -401,11 +430,28 @@
         return verts.map((v) => `${v.id},${v.este.toFixed(3)},${v.norte.toFixed(3)},${v.z.toFixed(3)},${parcel}`).join('\n');
       }
 
-      static generateDXF(verts) {
+      static generateDXF(verts, parcelName = 'PARCELA') {
         const lines = ['0', 'SECTION', '2', 'HEADER', '9', '$ACADVER', '1', 'AC1009', '0', 'ENDSEC', '0', 'SECTION', '2', 'ENTITIES'];
         if (verts.length >= 2) {
-          lines.push('0', 'POLYLINE', '8', 'LINDEROS', '66', '1', '70', verts.length >= 3 ? '1' : '0');
-          for (const v of verts) lines.push('0', 'VERTEX', '8', 'LINDEROS', '10', v.este.toFixed(3), '20', v.norte.toFixed(3), '30', v.z.toFixed(3));
+          lines.push('0', 'POLYLINE', '8', `LINDEROS_${parcelName.replace(/[^A-Z0-9_-]/gi, '_')}`, '66', '1', '70', verts.length >= 3 ? '1' : '0');
+          for (const v of verts) lines.push('0', 'VERTEX', '8', `LINDEROS_${parcelName.replace(/[^A-Z0-9_-]/gi, '_')}`, '10', v.este.toFixed(3), '20', v.norte.toFixed(3), '30', (v.z ?? v.cota ?? 0).toFixed(3));
+          lines.push('0', 'SEQEND');
+        }
+        lines.push('0', 'ENDSEC', '0', 'EOF');
+        return lines.join('\n');
+      }
+
+      static generateMultiParcelDXF(parcels) {
+        const lines = ['0', 'SECTION', '2', 'HEADER', '9', '$ACADVER', '1', 'AC1009', '0', 'ENDSEC', '0', 'SECTION', '2', 'ENTITIES'];
+        for (const p of parcels) {
+          const pts = extractParcelVertices(p);
+          if (pts.length < 2) continue;
+          const layer = `LINDEROS_${(p.nombre || 'PARCELA').replace(/[^A-Z0-9_-]/gi, '_')}`;
+          lines.push('0', 'POLYLINE', '8', layer, '66', '1', '70', pts.length >= 3 ? '1' : '0');
+          for (const v of pts) {
+            const utm = computeDualUtm(v.lat, v.lng, v.z);
+            lines.push('0', 'VERTEX', '8', layer, '10', utm.regvenEste.toFixed(3), '20', utm.regvenNorte.toFixed(3), '30', (v.z || 0).toFixed(3));
+          }
           lines.push('0', 'SEQEND');
         }
         lines.push('0', 'ENDSEC', '0', 'EOF');
@@ -413,13 +459,13 @@
       }
 
       static generateKML(verts, parcel) {
-        const ring = verts.map((v) => `${v.lng.toFixed(8)},${v.lat.toFixed(8)},${v.z.toFixed(2)}`);
-        if (verts.length >= 3) ring.push(`${verts[0].lng.toFixed(8)},${verts[0].lat.toFixed(8)},${verts[0].z.toFixed(2)}`);
-        return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${parcel}</name><Placemark><name>${parcel}</name><Polygon><outerBoundaryIs><LinearRing><coordinates>${ring.join(' ')}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark></Document></kml>`;
+        const ring = verts.map((v) => `${v.lng.toFixed(8)},${v.lat.toFixed(8)},${(v.z ?? 0).toFixed(2)}`);
+        if (verts.length >= 3) ring.push(`${verts[0].lng.toFixed(8)},${verts[0].lat.toFixed(8)},${(verts[0].z ?? 0).toFixed(2)}`);
+        return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${escapeHtml(parcel)}</name><Placemark><name>${escapeHtml(parcel)}</name><Polygon><outerBoundaryIs><LinearRing><coordinates>${ring.join(' ')}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark></Document></kml>`;
       }
     }
 
-    // ======================== STATE ========================
+    // ======================== INITIAL STATE ========================
     const DEFAULT_VERTICES = [
       { id: 'V-01', lat: 11.94385, lng: -69.81845, z: 12.4, rms: 0.008 },
       { id: 'V-02', lat: 11.94418, lng: -69.81762, z: 13.1, rms: 0.009 },
@@ -444,13 +490,22 @@
 
     const state = {
       activeTab: 'map',
+      parcelsSubTab: 'parcels', // 'parcels' | 'vertices'
       mapEngine: window.L ? 'leaflet' : 'svg',
       layerMode: 'satellite',
       method: 'rigida02',
       direction: 'canoa_regven',
       huso: 19,
+      projectName: 'Nuevo Proyecto',
+      projectNotes: '',
+      currentProjectId: null,
       parcelName: 'PARCELA-09B',
+      activeParcelId: null,
       vertices: JSON.parse(JSON.stringify(DEFAULT_VERTICES)),
+      savedParcels: [],
+      selectedParcelIds: [],
+      parcelSearchQuery: '',
+      editingParcelId: null,
       stakeTargetId: 'V-05',
       gpsEnabled: true,
       gpsStatus: 'Enlazando GNSS...',
@@ -469,6 +524,25 @@
       locateLng: '-69.818450',
       locateBatch: 'B1,409662.260,1327653.220,12.4\nB2,409740.420,1327663.600,13.1\nB3,409775.240,1327612.140,14.0\nB4,409719.960,1327557.280,13.3',
       cloudStatus: 'Sin comprobar',
+      auth: {
+        token: null,
+        user: null,
+      },
+      cloudProjects: [],
+      cloudLoading: false,
+      cloudSaving: false,
+      localProjects: [],
+      modal: null, // null | 'login' | 'editParcel' | 'summary' | 'ota'
+      ota: {
+        checking: false,
+        hasUpdate: false,
+        latestVersionCode: APP_VERSION_CODE,
+        latestVersionName: APP_VERSION_NAME,
+        downloadUrl: APK_DOWNLOAD_DEFAULT_URL,
+        notes: 'Versión instalada verificada.',
+        lastChecked: null,
+        dismissed: false,
+      },
     };
 
     function notify(msg) {
@@ -476,30 +550,235 @@
       el.textContent = msg;
       el.classList.remove('hidden');
       clearTimeout(notify._t);
-      notify._t = setTimeout(() => el.classList.add('hidden'), 2700);
+      notify._t = setTimeout(() => el.classList.add('hidden'), 2800);
     }
 
-    function computeDualUtm(lat, lng, z) {
-      const regven = GeoEngine.geoToUTM(lat, lng, state.huso, GRS80);
+    function downloadFileBlob(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    function computeDualUtm(lat, lng, z, husoOverride, methodOverride) {
+      const huso = husoOverride || state.huso;
+      const method = methodOverride || state.method;
+      const regven = GeoEngine.geoToUTM(lat, lng, huso, GRS80);
       let canoaEste = regven.este, canoaNorte = regven.norte;
-      if (state.method === 'rigida02') {
+      if (method === 'rigida02') {
         canoaEste = Math.round((regven.este - GeoEngine.RIGIDA02_DELTA_ESTE) * 1000) / 1000;
         canoaNorte = Math.round((regven.norte - GeoEngine.RIGIDA02_DELTA_NORTE) * 1000) / 1000;
       } else {
-        const cartR = GeoEngine.geoToCart(lat, lng, z, GRS80);
+        const cartR = GeoEngine.geoToCart(lat, lng, z || 0, GRS80);
         const cartC = GeoEngine.badekas(cartR.X, cartR.Y, cartR.Z, true);
         const geoC = GeoEngine.cartToGeo(cartC.X, cartC.Y, cartC.Z, HAYFORD);
-        const utmC = GeoEngine.geoToUTM(geoC.lat, geoC.lng, state.huso, HAYFORD);
+        const utmC = GeoEngine.geoToUTM(geoC.lat, geoC.lng, huso, HAYFORD);
         canoaEste = utmC.este;
         canoaNorte = utmC.norte;
       }
-      const lon0 = state.huso * 6 - 183, latR = GeoEngine.toRad(lat), sLat = Math.sin(latR);
+      const lon0 = huso * 6 - 183, latR = GeoEngine.toRad(lat), sLat = Math.sin(latR);
       const N = GRS80.a / Math.sqrt(1 - GRS80.e2 * sLat * sLat);
       const rho = (GRS80.a * (1 - GRS80.e2)) / Math.pow(1 - GRS80.e2 * sLat * sLat, 1.5);
       const rMean = Math.sqrt(N * rho), x = regven.este - 500000;
       const k = 0.9996 * (1 + (x * x) / (2 * rMean * rMean * 0.9996 * 0.9996));
       const conv = (lng - lon0) * sLat;
       return { regvenEste: regven.este, regvenNorte: regven.norte, canoaEste, canoaNorte, k, conv };
+    }
+
+    function buildParcelPuntosFromVertices(verts, parcelName, huso, method, direction) {
+      return verts.map((v, idx) => {
+        const dual = computeDualUtm(v.lat, v.lng, v.z, huso, method);
+        const activeE = direction === 'canoa_regven' ? dual.regvenEste : dual.canoaEste;
+        const activeN = direction === 'canoa_regven' ? dual.regvenNorte : dual.canoaNorte;
+        return {
+          id: v.id || `P${idx + 1}`,
+          ok: true,
+          direction,
+          input: {
+            id: v.id || `P${idx + 1}`,
+            este: dual.canoaEste,
+            norte: dual.canoaNorte,
+            huso,
+            alt: v.z || 0,
+            desc: 'CAMPO',
+            parcel: parcelName,
+          },
+          result: {
+            este: activeE,
+            norte: activeN,
+            huso,
+            cota: v.z || 0,
+            lat: v.lat,
+            lng: v.lng,
+            descripcion: parcelName,
+          },
+        };
+      });
+    }
+
+    function extractParcelVertices(parcel) {
+      if (!parcel || !Array.isArray(parcel.puntos)) return [];
+      const huso = parcel.huso || state.huso || 19;
+      return parcel.puntos
+        .map((pt, idx) => {
+          const r = pt.result || {};
+          const inp = pt.input || {};
+          let lat = Number(r.lat ?? inp.lat);
+          let lng = Number(r.lng ?? inp.lng);
+          const z = Number(r.cota ?? inp.alt ?? pt.z ?? 0) || 0;
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+            const e = Number(r.este ?? inp.este ?? pt.este);
+            const n = Number(r.norte ?? inp.norte ?? pt.norte);
+            if (Number.isFinite(e) && Number.isFinite(n)) {
+              const g = GeoEngine.utmToGeo(e, n, Number(r.huso || inp.huso || huso), false, GRS80);
+              lat = g.lat;
+              lng = g.lng;
+            }
+          }
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+          return {
+            id: pt.id || `P${idx + 1}`,
+            lat,
+            lng,
+            z,
+            rms: Number(pt.rms || 0.01),
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function normalizeImportedParcel(raw) {
+      const verts = extractParcelVertices(raw);
+      const huso = raw.huso || (verts[0] ? GeoEngine.detectHuso(verts[0].lng) : state.huso);
+      const method = raw.method || state.method;
+      const mapped = verts.map((v) => {
+        const dual = computeDualUtm(v.lat, v.lng, v.z, huso, method);
+        return { ...v, este: dual.regvenEste, norte: dual.regvenNorte };
+      });
+      const stats = GeoEngine.calculatePolygonStats(mapped);
+      return {
+        id: raw.id || `POL-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+        nombre: raw.nombre || 'Parcela Sin Nombre',
+        fecha: raw.fecha || new Date().toLocaleDateString('es-VE'),
+        area: Number.isFinite(raw.area) ? raw.area : stats.areaM2,
+        perim: Number.isFinite(raw.perim) ? raw.perim : stats.perimeter,
+        ha: Number.isFinite(raw.ha) ? raw.ha : stats.areaHa,
+        geometryType: raw.geometryType || 'cerrada',
+        method,
+        huso,
+        hatchColor: raw.hatchColor || '#4cd7f6',
+        hatchOpacity: raw.hatchOpacity ?? 0.2,
+        propietario: raw.propietario || '',
+        rif: raw.rif || '',
+        estado: raw.estado || '',
+        municipio: raw.municipio || '',
+        parroquia: raw.parroquia || '',
+        ubicacionSector: raw.ubicacionSector || '',
+        domicilio: raw.domicilio || '',
+        cedulaCat: raw.cedulaCat || '',
+        profesional: raw.profesional || '',
+        civ: raw.civ || '',
+        zona: raw.zona || '',
+        seccion: raw.seccion || '',
+        observaciones: raw.observaciones || '',
+        puntos: Array.isArray(raw.puntos) && raw.puntos.length > 0
+          ? raw.puntos
+          : buildParcelPuntosFromVertices(verts, raw.nombre || 'Parcela', huso, method, state.direction),
+        actualizado: raw.actualizado || new Date().toISOString(),
+      };
+    }
+
+    function persistWorkspaceLocal() {
+      try {
+        const payload = {
+          projectName: state.projectName,
+          projectNotes: state.projectNotes,
+          currentProjectId: state.currentProjectId,
+          parcelName: state.parcelName,
+          activeParcelId: state.activeParcelId,
+          vertices: state.vertices,
+          savedParcels: state.savedParcels,
+          huso: state.huso,
+          method: state.method,
+          direction: state.direction,
+        };
+        localStorage.setItem(STORAGE_KEY_WORKSPACE, JSON.stringify(payload));
+      } catch {}
+    }
+
+    function hydratePersistence() {
+      try {
+        const rawAuth = localStorage.getItem(STORAGE_KEY_AUTH);
+        if (rawAuth) {
+          const parsedAuth = JSON.parse(rawAuth);
+          if (parsedAuth && parsedAuth.token && parsedAuth.user) {
+            state.auth = parsedAuth;
+          }
+        }
+      } catch {}
+
+      try {
+        const rawLocals = localStorage.getItem(STORAGE_KEY_LOCAL_PROJECTS);
+        if (rawLocals) {
+          const parsedLocals = JSON.parse(rawLocals);
+          if (Array.isArray(parsedLocals)) state.localProjects = parsedLocals;
+        }
+      } catch {}
+
+      try {
+        const rawWs = localStorage.getItem(STORAGE_KEY_WORKSPACE);
+        if (rawWs) {
+          const ws = JSON.parse(rawWs);
+          if (ws && typeof ws === 'object') {
+            if (ws.projectName) state.projectName = ws.projectName;
+            if (typeof ws.projectNotes === 'string') state.projectNotes = ws.projectNotes;
+            if (ws.currentProjectId !== undefined) state.currentProjectId = ws.currentProjectId;
+            if (ws.parcelName) state.parcelName = ws.parcelName;
+            if (ws.activeParcelId !== undefined) state.activeParcelId = ws.activeParcelId;
+            if (Array.isArray(ws.vertices) && ws.vertices.length >= 1) state.vertices = ws.vertices;
+            if (Array.isArray(ws.savedParcels)) state.savedParcels = ws.savedParcels;
+            if (ws.huso) state.huso = ws.huso;
+            if (ws.method) state.method = ws.method;
+            if (ws.direction) state.direction = ws.direction;
+          }
+        }
+      } catch {}
+
+      if (state.savedParcels.length === 0) {
+        // Seed initial sample parcel in savedParcels so users see Desktop-style list out of the box
+        const dualPts = DEFAULT_VERTICES.map((v) => {
+          const d = computeDualUtm(v.lat, v.lng, v.z, 19, 'rigida02');
+          return { ...v, este: d.regvenEste, norte: d.regvenNorte };
+        });
+        const st = GeoEngine.calculatePolygonStats(dualPts);
+        state.savedParcels = [
+          {
+            id: 'POL-SAMPLE-09B',
+            nombre: 'PARCELA-09B',
+            fecha: new Date().toLocaleDateString('es-VE'),
+            area: st.areaM2,
+            perim: st.perimeter,
+            ha: st.areaHa,
+            geometryType: 'cerrada',
+            method: 'rigida02',
+            huso: 19,
+            hatchColor: '#4cd7f6',
+            hatchOpacity: 0.2,
+            propietario: 'PARCELA EJEMPLO CAMPO',
+            municipio: 'FALCÓN',
+            parroquia: 'ADÍCORA',
+            cedulaCat: '11-06-01-U-09B',
+            puntos: buildParcelPuntosFromVertices(DEFAULT_VERTICES, 'PARCELA-09B', 19, 'rigida02', 'canoa_regven'),
+            actualizado: new Date().toISOString(),
+          },
+        ];
+        state.activeParcelId = 'POL-SAMPLE-09B';
+      }
     }
 
     function getComputedParcel() {
@@ -536,6 +815,35 @@
       };
     }
 
+    function renderParcelMinimapSvg(parcel) {
+      const verts = extractParcelVertices(parcel);
+      if (verts.length < 2) {
+        return `<div class="w-16 h-16 rounded-lg bg-[#060e20] border border-[#222a3d] flex items-center justify-center shrink-0 font-mono text-[10px] text-[#869397]">POLY</div>`;
+      }
+      const pts = verts.map((v) => {
+        const u = computeDualUtm(v.lat, v.lng, v.z, parcel.huso || state.huso, parcel.method || state.method);
+        return { x: u.regvenEste, y: u.regvenNorte };
+      });
+      const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
+      const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+      const rangeX = maxX - minX || 1, rangeY = maxY - minY || 1;
+      const size = 64, pad = 6, inner = size - pad * 2;
+      const sc = Math.min(inner / rangeX, inner / rangeY);
+      const ox = pad + (inner - rangeX * sc) / 2, oy = pad + (inner - rangeY * sc) / 2;
+      const svgPts = pts.map((p) => ({
+        sx: ox + (p.x - minX) * sc,
+        sy: size - (oy + (p.y - minY) * sc),
+      }));
+      const poly = svgPts.map((p) => `${p.sx.toFixed(1)},${p.sy.toFixed(1)}`).join(' ');
+      const col = parcel.hatchColor || '#4cd7f6';
+      return `
+        <svg width="64" height="64" viewBox="0 0 64 64" class="rounded-lg bg-[#060e20] border border-[#222a3d] shrink-0">
+          <polygon points="${poly}" fill="${col}" fill-opacity="0.28" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" />
+          ${svgPts.map((p) => `<circle cx="${p.sx.toFixed(1)}" cy="${p.sy.toFixed(1)}" r="1.8" fill="${col}" />`).join('')}
+        </svg>
+      `;
+    }
+
     // ======================== LEAFLET SATELLITE MAP ========================
     let leafletMap = null;
     let leafletTileLayer = null;
@@ -553,10 +861,8 @@
 
     function initLeafletIfNeeded() {
       if (!window.L || leafletMap) return;
-      leafletMap = L.map('leaflet-map', { zoomControl: false, attributionControl: false }).setView(
-        [state.vertices[0].lat, state.vertices[0].lng],
-        18
-      );
+      const c = state.vertices[0] || { lat: 11.94385, lng: -69.81845 };
+      leafletMap = L.map('leaflet-map', { zoomControl: false, attributionControl: false }).setView([c.lat, c.lng], 18);
       leafletTileLayer = L.tileLayer(getTileUrl(state.layerMode), { maxZoom: 21 }).addTo(leafletMap);
       leafletVertexLayer = L.layerGroup().addTo(leafletMap);
     }
@@ -632,6 +938,587 @@
       }
     }
 
+    // ======================== PARCEL MANAGEMENT (DESKTOP PARITY) ========================
+    function saveActivePolygonToParcels(customName) {
+      const data = getComputedParcel();
+      const name = (customName || state.parcelName || 'PARCELA').trim() || 'PARCELA';
+      const puntos = buildParcelPuntosFromVertices(state.vertices, name, state.huso, state.method, state.direction);
+      const existingIdx = state.activeParcelId
+        ? state.savedParcels.findIndex((p) => p.id === state.activeParcelId)
+        : -1;
+
+      if (existingIdx >= 0 && !customName) {
+        const cur = state.savedParcels[existingIdx];
+        state.savedParcels[existingIdx] = {
+          ...cur,
+          nombre: name,
+          area: data.stats.areaM2,
+          perim: data.stats.perimeter,
+          ha: data.stats.areaHa,
+          huso: state.huso,
+          method: state.method,
+          puntos,
+          actualizado: new Date().toISOString(),
+        };
+        notify(`Parcela "${name}" actualizada (${data.stats.areaM2.toFixed(1)} m²)`);
+      } else {
+        const newParcel = {
+          id: `POL-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+          nombre: name,
+          fecha: new Date().toLocaleDateString('es-VE'),
+          area: data.stats.areaM2,
+          perim: data.stats.perimeter,
+          ha: data.stats.areaHa,
+          geometryType: 'cerrada',
+          method: state.method,
+          huso: state.huso,
+          hatchColor: '#4cd7f6',
+          hatchOpacity: 0.22,
+          propietario: '',
+          rif: '',
+          estado: '',
+          municipio: '',
+          parroquia: '',
+          ubicacionSector: '',
+          cedulaCat: '',
+          puntos,
+          actualizado: new Date().toISOString(),
+        };
+        state.savedParcels.unshift(newParcel);
+        state.activeParcelId = newParcel.id;
+        state.parcelName = name;
+        notify(`Parcela "${name}" guardada en proyecto`);
+      }
+      persistWorkspaceLocal();
+      renderAll();
+    }
+
+    function loadSavedParcelIntoWorkspace(parcelId, switchToMap = true) {
+      const parcel = state.savedParcels.find((p) => p.id === parcelId);
+      if (!parcel) return;
+      const verts = extractParcelVertices(parcel);
+      if (verts.length === 0) {
+        notify('La parcela no contiene vértices válidos');
+        return;
+      }
+      state.activeParcelId = parcel.id;
+      state.parcelName = parcel.nombre;
+      state.vertices = verts;
+      if (parcel.huso) state.huso = parcel.huso;
+      if (parcel.method) state.method = parcel.method;
+      state.stakeTargetId = verts[0].id;
+      if (switchToMap) state.activeTab = 'map';
+      persistWorkspaceLocal();
+      renderAll();
+      if (switchToMap && leafletMap) {
+        setTimeout(() => {
+          leafletMap.invalidateSize();
+          if (verts.length >= 2) leafletMap.fitBounds(verts.map((v) => [v.lat, v.lng]), { padding: [36, 36] });
+        }, 120);
+      }
+      notify(`Parcela "${parcel.nombre}" cargada (${verts.length} pts)`);
+    }
+
+    // ======================== CLOUD AUTH & PROJECTS (POSTGRESQL + LOCAL) ========================
+    async function loginToCloud(email, password) {
+      const deviceId = getOrCreateDeviceId();
+      const res = await fetch(`${CLOUD_URL}/api/auth/apk-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-device-id': deviceId },
+        body: JSON.stringify({ email, password, deviceId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success || !data.token) {
+        throw new Error(data.error || 'Error de autenticación');
+      }
+      state.auth = { token: data.token, user: data.user };
+      localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(state.auth));
+      if (Array.isArray(data.projects)) {
+        state.cloudProjects = data.projects;
+      }
+      state.cloudStatus = 'PostgreSQL Autenticado';
+      state.modal = null;
+      notify(`Bienvenido ${data.user.nombre || data.user.username}`);
+      renderAll();
+      return data;
+    }
+
+    function logoutFromCloud() {
+      state.auth = { token: null, user: null };
+      state.cloudProjects = [];
+      localStorage.removeItem(STORAGE_KEY_AUTH);
+      notify('Sesión cerrada (Modo Campo Local)');
+      state.modal = null;
+      renderAll();
+    }
+
+    async function fetchCloudProjects() {
+      if (!state.auth.token) return;
+      state.cloudLoading = true;
+      renderAll();
+      try {
+        const res = await fetch(`${CLOUD_URL}/api/projects`, {
+          headers: { Authorization: `Bearer ${state.auth.token}`, 'x-device-id': getOrCreateDeviceId() },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          logoutFromCloud();
+          notify('Sesión expirada. Inicia sesión nuevamente.');
+          return;
+        }
+        if (data.success && Array.isArray(data.projects)) {
+          state.cloudProjects = data.projects;
+          state.cloudStatus = 'PostgreSQL Conectado';
+        }
+      } catch {
+        notify('Sin conexión al servidor para listar proyectos');
+      } finally {
+        state.cloudLoading = false;
+        renderAll();
+      }
+    }
+
+    function buildProjectPayload() {
+      return {
+        meta: { nombre: state.projectName || 'Nuevo Proyecto', notas: state.projectNotes || '' },
+        parcels: state.savedParcels,
+        version: '6.0-android',
+        exportDate: new Date().toISOString(),
+      };
+    }
+
+    function applyImportedProjectData(data, cloudProjectId = null) {
+      if (!data || typeof data !== 'object') {
+        notify('Archivo o proyecto inválido');
+        return;
+      }
+      const rawParcels = Array.isArray(data.parcels) ? data.parcels : [];
+      const normalized = rawParcels.map(normalizeImportedParcel);
+      state.savedParcels = normalized;
+      state.projectName = data.meta?.nombre || data.nombre || 'Proyecto Cargado';
+      state.projectNotes = data.meta?.notas || '';
+      state.currentProjectId = cloudProjectId;
+      state.selectedParcelIds = [];
+      if (normalized.length > 0) {
+        const first = normalized[0];
+        const verts = extractParcelVertices(first);
+        if (verts.length >= 1) {
+          state.activeParcelId = first.id;
+          state.parcelName = first.nombre;
+          state.vertices = verts;
+          state.stakeTargetId = verts[0].id;
+        }
+      }
+      persistWorkspaceLocal();
+      renderAll();
+      notify(`Proyecto "${state.projectName}" cargado (${normalized.length} parcelas)`);
+    }
+
+    async function saveProjectToCloud() {
+      if (!state.auth.token) {
+        state.modal = 'login';
+        renderModal();
+        notify('Inicia sesión para guardar en PostgreSQL');
+        return;
+      }
+      state.cloudSaving = true;
+      renderAll();
+      try {
+        const payload = buildProjectPayload();
+        const res = await fetch(`${CLOUD_URL}/api/projects`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${state.auth.token}`,
+            'x-device-id': getOrCreateDeviceId(),
+          },
+          body: JSON.stringify({
+            id: state.currentProjectId || null,
+            name: state.projectName || 'Nuevo Proyecto',
+            content: payload,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Error guardando en la nube');
+        }
+        state.currentProjectId = data.projectId;
+        persistWorkspaceLocal();
+        notify(state.currentProjectId ? 'Proyecto sincronizado en PostgreSQL' : 'Proyecto guardado en PostgreSQL');
+        await fetchCloudProjects();
+      } catch (err) {
+        notify(err.message || 'Error guardando en la nube');
+      } finally {
+        state.cloudSaving = false;
+        renderAll();
+      }
+    }
+
+    async function loadCloudProjectById(projectId) {
+      if (!state.auth.token) return;
+      state.cloudLoading = true;
+      renderAll();
+      try {
+        const res = await fetch(`${CLOUD_URL}/api/projects?id=${encodeURIComponent(projectId)}`, {
+          headers: { Authorization: `Bearer ${state.auth.token}`, 'x-device-id': getOrCreateDeviceId() },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success || !data.content) {
+          throw new Error(data.error || 'No se pudo descargar el proyecto');
+        }
+        const contentObj = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+        if (!contentObj.meta) contentObj.meta = { nombre: data.nombre || 'Proyecto Cloud', notas: '' };
+        applyImportedProjectData(contentObj, projectId);
+        state.activeTab = 'parcels';
+        state.parcelsSubTab = 'parcels';
+        renderAll();
+      } catch (err) {
+        notify(err.message || 'Error al cargar proyecto');
+      } finally {
+        state.cloudLoading = false;
+        renderAll();
+      }
+    }
+
+    async function deleteCloudProjectById(projectId) {
+      if (!state.auth.token) return;
+      try {
+        const res = await fetch(`${CLOUD_URL}/api/projects?id=${encodeURIComponent(projectId)}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${state.auth.token}`, 'x-device-id': getOrCreateDeviceId() },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) throw new Error(data.error || 'Error al eliminar');
+        if (state.currentProjectId === projectId) {
+          state.currentProjectId = null;
+          persistWorkspaceLocal();
+        }
+        notify('Proyecto eliminado de la nube');
+        await fetchCloudProjects();
+      } catch (err) {
+        notify(err.message || 'Error eliminando proyecto');
+      }
+    }
+
+    function saveCurrentProjectToLocalList() {
+      const id = `loc_${Date.now().toString(36)}`;
+      const entry = {
+        id,
+        nombre: state.projectName || 'Proyecto Local',
+        actualizado: new Date().toISOString(),
+        data: buildProjectPayload(),
+      };
+      state.localProjects.unshift(entry);
+      localStorage.setItem(STORAGE_KEY_LOCAL_PROJECTS, JSON.stringify(state.localProjects.slice(0, 30)));
+      notify(`Proyecto "${entry.nombre}" guardado en dispositivo`);
+      renderAll();
+    }
+
+    // ======================== AUTO-UPDATE APK (OTA ENGINE) ========================
+    async function checkApkUpdates(manual = false) {
+      state.ota.checking = true;
+      if (state.activeTab === 'projects') renderAll();
+
+      let bestCode = APP_VERSION_CODE;
+      let bestName = APP_VERSION_NAME;
+      let bestUrl = APK_DOWNLOAD_DEFAULT_URL;
+      let bestNotes = 'Última versión oficial instalada.';
+
+      try {
+        const [renderRes, ghRes] = await Promise.allSettled([
+          fetch(`${CLOUD_URL}/api/apk-version?t=${Date.now()}`, { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)),
+          fetch(GITHUB_RELEASE_API_URL, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)),
+        ]);
+
+        if (renderRes.status === 'fulfilled' && renderRes.value && Number(renderRes.value.versionCode) > bestCode) {
+          bestCode = Number(renderRes.value.versionCode);
+          bestName = renderRes.value.versionName || bestName;
+          bestUrl = renderRes.value.downloadUrl || bestUrl;
+          bestNotes = renderRes.value.notes || bestNotes;
+        }
+
+        if (ghRes.status === 'fulfilled' && ghRes.value) {
+          const bodyStr = String(ghRes.value.body || '');
+          const mCode = bodyStr.match(/\[APK_VERSION_CODE=(\d+)\]/i);
+          const mName = bodyStr.match(/\[APK_VERSION_NAME=([^\]]+)\]/i);
+          const apkAsset = Array.isArray(ghRes.value.assets)
+            ? ghRes.value.assets.find((a) => String(a.name || '').endsWith('.apk'))
+            : null;
+          if (mCode && Number(mCode[1]) > bestCode) {
+            bestCode = Number(mCode[1]);
+            bestName = mName ? mName[1].trim() : bestName;
+            bestUrl = apkAsset?.browser_download_url || bestUrl;
+            bestNotes = bodyStr.replace(/\[APK_VERSION_[^\]]+\]/g, '').trim() || bestNotes;
+          }
+        }
+      } catch {}
+
+      state.ota.checking = false;
+      state.ota.lastChecked = new Date().toLocaleTimeString();
+      state.ota.latestVersionCode = bestCode;
+      state.ota.latestVersionName = bestName;
+      state.ota.downloadUrl = bestUrl;
+      state.ota.notes = bestNotes;
+      state.ota.hasUpdate = bestCode > APP_VERSION_CODE;
+
+      updateHeaderIndicators();
+      if (state.ota.hasUpdate && (!state.ota.dismissed || manual)) {
+        state.modal = 'ota';
+        renderModal();
+      } else if (manual) {
+        notify(state.ota.hasUpdate ? `Nueva versión v${bestName} disponible` : `Tu APK v${APP_VERSION_NAME} está al día`);
+      }
+      if (state.activeTab === 'projects') renderAll();
+    }
+
+    function triggerApkDownload(url) {
+      const target = url || state.ota.downloadUrl || APK_DOWNLOAD_DEFAULT_URL;
+      notify('Abriendo descarga e instalador Android...');
+      window.open(target, '_blank');
+    }
+
+    // ======================== MODALS RENDERER ========================
+    function closeModal() {
+      if (state.modal === 'ota') state.ota.dismissed = true;
+      state.modal = null;
+      renderModal();
+    }
+
+    function renderModal() {
+      const root = document.getElementById('modal-root');
+      if (!state.modal) {
+        root.classList.add('hidden');
+        root.innerHTML = '';
+        return;
+      }
+      root.classList.remove('hidden');
+
+      if (state.modal === 'login') {
+        const u = state.auth.user;
+        root.innerHTML = `
+          <div class="w-full max-w-md rounded-2xl bg-[#131b2e] border border-[#2d3449] shadow-2xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-[#222a3d] flex items-center justify-between bg-[#0b1326]">
+              <div>
+                <div class="text-sm font-bold text-white">🔐 Acceso Cloud GeoGIS6</div>
+                <div class="font-mono text-[10px] text-[#4cd7f6]">Device ID: ${escapeHtml(getOrCreateDeviceId())}</div>
+              </div>
+              <button id="m-close" type="button" class="px-2 py-1 rounded-lg bg-[#171f33] text-xs text-[#bcc9cd]">✕</button>
+            </div>
+            <div class="p-4 space-y-3">
+              ${u ? `
+                <div class="p-3 rounded-xl bg-[#060e20] border border-[#4edea3]/30 space-y-1">
+                  <div class="text-xs font-bold text-[#4edea3]">Sesión Activa en PostgreSQL</div>
+                  <div class="text-sm font-bold text-white">${escapeHtml(u.nombre || u.username)}</div>
+                  <div class="font-mono text-[10px] text-[#bcc9cd]">${escapeHtml(u.email)} · Rol: ${escapeHtml(u.rol)}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <button id="m-sync-projects" type="button" class="py-2.5 rounded-xl bg-[#4cd7f6] text-[#003640] font-bold text-xs">↻ Sincronizar Proyectos</button>
+                  <button id="m-logout" type="button" class="py-2.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold text-xs">Cerrar Sesión</button>
+                </div>
+              ` : `
+                <form id="m-login-form" class="space-y-2.5">
+                  <div>
+                    <label class="font-mono text-[9px] text-[#869397] block mb-1">USUARIO O CORREO ELECTRÓNICO</label>
+                    <input id="m-login-email" required autocomplete="username" placeholder="usuario o correo@ejemplo.com" class="w-full bg-[#060e20] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs text-white" />
+                  </div>
+                  <div>
+                    <label class="font-mono text-[9px] text-[#869397] block mb-1">CONTRASEÑA</label>
+                    <input id="m-login-pass" type="password" required autocomplete="current-password" placeholder="••••••••" class="w-full bg-[#060e20] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs text-white" />
+                  </div>
+                  <div id="m-login-error" class="hidden p-2 rounded-lg bg-rose-500/15 border border-rose-500/40 text-rose-300 text-[11px]"></div>
+                  <button id="m-login-submit" type="submit" class="w-full py-2.5 rounded-xl bg-[#4edea3] text-[#003824] font-bold text-xs">Ingresar a GeoGIS6 Cloud</button>
+                  <p class="font-mono text-[9px] text-[#869397] text-center">También puedes trabajar 100% sin conexión guardando parcelas y proyectos locales en tu teléfono.</p>
+                </form>
+              `}
+            </div>
+          </div>
+        `;
+        document.getElementById('m-close')?.addEventListener('click', closeModal);
+        document.getElementById('m-logout')?.addEventListener('click', logoutFromCloud);
+        document.getElementById('m-sync-projects')?.addEventListener('click', () => { closeModal(); state.activeTab = 'projects'; fetchCloudProjects(); });
+        document.getElementById('m-login-form')?.addEventListener('submit', async (ev) => {
+          ev.preventDefault();
+          const btn = document.getElementById('m-login-submit');
+          const errBox = document.getElementById('m-login-error');
+          const email = document.getElementById('m-login-email').value.trim();
+          const pass = document.getElementById('m-login-pass').value;
+          btn.disabled = true;
+          btn.textContent = 'Autenticando...';
+          errBox.classList.add('hidden');
+          try {
+            await loginToCloud(email, pass);
+          } catch (err) {
+            errBox.textContent = err.message || 'Credenciales inválidas';
+            errBox.classList.remove('hidden');
+            btn.disabled = false;
+            btn.textContent = 'Ingresar a GeoGIS6 Cloud';
+          }
+        });
+        return;
+      }
+
+      if (state.modal === 'editParcel') {
+        const parcel = state.savedParcels.find((p) => p.id === state.editingParcelId);
+        if (!parcel) { closeModal(); return; }
+        root.innerHTML = `
+          <div class="w-full max-w-lg max-h-[88vh] rounded-2xl bg-[#131b2e] border border-[#2d3449] shadow-2xl flex flex-col overflow-hidden">
+            <div class="px-4 py-3 border-b border-[#222a3d] flex items-center justify-between bg-[#0b1326]">
+              <div class="text-sm font-bold text-white">✏ Editar Datos Catastrales</div>
+              <button id="m-close" type="button" class="px-2 py-1 rounded-lg bg-[#171f33] text-xs text-[#bcc9cd]">✕</button>
+            </div>
+            <form id="m-edit-parcel-form" class="p-4 overflow-y-auto space-y-2.5 text-xs">
+              <div class="grid grid-cols-2 gap-2">
+                <div class="col-span-2"><label class="font-mono text-[8.5px] text-[#869397] block">NOMBRE DE PARCELA</label><input name="nombre" value="${escapeHtml(parcel.nombre)}" required class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2.5 py-2 text-white"/></div>
+                <div><label class="font-mono text-[8.5px] text-[#869397] block">PROPIETARIO</label><input name="propietario" value="${escapeHtml(parcel.propietario || '')}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2.5 py-2 text-white"/></div>
+                <div><label class="font-mono text-[8.5px] text-[#869397] block">RIF / C.I.</label><input name="rif" value="${escapeHtml(parcel.rif || '')}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2.5 py-2 text-white"/></div>
+                <div><label class="font-mono text-[8.5px] text-[#869397] block">ESTADO</label><input name="estado" value="${escapeHtml(parcel.estado || '')}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2.5 py-2 text-white"/></div>
+                <div><label class="font-mono text-[8.5px] text-[#869397] block">MUNICIPIO</label><input name="municipio" value="${escapeHtml(parcel.municipio || '')}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2.5 py-2 text-white"/></div>
+                <div><label class="font-mono text-[8.5px] text-[#869397] block">PARROQUIA</label><input name="parroquia" value="${escapeHtml(parcel.parroquia || '')}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2.5 py-2 text-white"/></div>
+                <div><label class="font-mono text-[8.5px] text-[#869397] block">SECTOR</label><input name="ubicacionSector" value="${escapeHtml(parcel.ubicacionSector || '')}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2.5 py-2 text-white"/></div>
+                <div class="col-span-2"><label class="font-mono text-[8.5px] text-[#869397] block">CÉDULA CATASTRAL</label><input name="cedulaCat" value="${escapeHtml(parcel.cedulaCat || '')}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2.5 py-2 text-white"/></div>
+                <div class="col-span-2"><label class="font-mono text-[8.5px] text-[#869397] block">OBSERVACIONES</label><textarea name="observaciones" rows="2" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2.5 py-2 text-white">${escapeHtml(parcel.observaciones || '')}</textarea></div>
+              </div>
+              <button type="submit" class="w-full py-2.5 rounded-xl bg-[#4edea3] text-[#003824] font-bold text-xs">Guardar Metadatos Catastrales</button>
+            </form>
+          </div>
+        `;
+        document.getElementById('m-close')?.addEventListener('click', closeModal);
+        document.getElementById('m-edit-parcel-form')?.addEventListener('submit', (ev) => {
+          ev.preventDefault();
+          const fd = new FormData(ev.target);
+          parcel.nombre = String(fd.get('nombre') || parcel.nombre).trim();
+          parcel.propietario = String(fd.get('propietario') || '').trim();
+          parcel.rif = String(fd.get('rif') || '').trim();
+          parcel.estado = String(fd.get('estado') || '').trim();
+          parcel.municipio = String(fd.get('municipio') || '').trim();
+          parcel.parroquia = String(fd.get('parroquia') || '').trim();
+          parcel.ubicacionSector = String(fd.get('ubicacionSector') || '').trim();
+          parcel.cedulaCat = String(fd.get('cedulaCat') || '').trim();
+          parcel.observaciones = String(fd.get('observaciones') || '').trim();
+          parcel.actualizado = new Date().toISOString();
+          if (state.activeParcelId === parcel.id) state.parcelName = parcel.nombre;
+          persistWorkspaceLocal();
+          closeModal();
+          renderAll();
+          notify('Datos de mensura guardados');
+        });
+        return;
+      }
+
+      if (state.modal === 'summary') {
+        const list = state.selectedParcelIds.length > 0
+          ? state.savedParcels.filter((p) => state.selectedParcelIds.includes(p.id))
+          : state.savedParcels;
+        const totArea = list.reduce((a, p) => a + Math.abs(p.area || 0), 0);
+        const totPerim = list.reduce((a, p) => a + Math.abs(p.perim || 0), 0);
+        root.innerHTML = `
+          <div class="w-full max-w-lg max-h-[88vh] rounded-2xl bg-[#131b2e] border border-[#2d3449] shadow-2xl flex flex-col overflow-hidden">
+            <div class="px-4 py-3 border-b border-[#222a3d] flex items-center justify-between bg-[#0b1326]">
+              <div>
+                <div class="text-sm font-bold text-white">📊 Tabla Resumen Multiparcela</div>
+                <div class="font-mono text-[10px] text-[#4edea3]">${list.length} parcelas · ${(totArea / 10000).toFixed(4)} ha (${totArea.toFixed(2)} m²)</div>
+              </div>
+              <button id="m-close" type="button" class="px-2 py-1 rounded-lg bg-[#171f33] text-xs text-[#bcc9cd]">✕</button>
+            </div>
+            <div class="p-3 overflow-y-auto space-y-2">
+              <div class="grid grid-cols-3 gap-1.5 bg-[#060e20] p-2.5 rounded-xl font-mono text-[10px]">
+                <div><span class="text-[8px] text-[#869397] block">PARCELAS</span><b class="text-white">${list.length}</b></div>
+                <div><span class="text-[8px] text-[#869397] block">ÁREA TOTAL</span><b class="text-[#4edea3]">${totArea.toFixed(1)} m²</b></div>
+                <div><span class="text-[8px] text-[#869397] block">PERÍMETRO</span><b class="text-[#4cd7f6]">${totPerim.toFixed(2)} ml</b></div>
+              </div>
+              <div class="space-y-1.5">
+                ${list.map((p, i) => `
+                  <div class="p-2 rounded-xl bg-[#171f33] border border-[#222a3d] flex items-center justify-between font-mono text-[10px]">
+                    <div class="min-w-0 pr-2">
+                      <div class="font-bold text-white truncate">${i + 1}. ${escapeHtml(p.nombre)}</div>
+                      <div class="text-[9px] text-[#869397] truncate">${escapeHtml(p.propietario || 'Sin propietario')} ${p.cedulaCat ? '· ' + escapeHtml(p.cedulaCat) : ''}</div>
+                    </div>
+                    <div class="text-right shrink-0">
+                      <div class="text-[#4edea3] font-bold">${Math.abs(p.area || 0).toFixed(2)} m²</div>
+                      <div class="text-[9px] text-[#bcc9cd]">${(Math.abs(p.area || 0) / 10000).toFixed(4)} ha</div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            <div class="p-3 border-t border-[#222a3d] grid grid-cols-2 gap-2 bg-[#0b1326]">
+              <button id="m-sum-csv" type="button" class="py-2 rounded-xl bg-[#4edea3] text-[#003824] font-bold text-xs">⬇ Exportar CSV Excel</button>
+              <button id="m-sum-dxf" type="button" class="py-2 rounded-xl bg-[#4cd7f6] text-[#003640] font-bold text-xs">⬇ Exportar DXF Multi</button>
+            </div>
+          </div>
+        `;
+        document.getElementById('m-close')?.addEventListener('click', closeModal);
+        document.getElementById('m-sum-csv')?.addEventListener('click', () => {
+          const rows = ['N°,Parcela,Propietario,CedulaCatastral,Area_m2,Area_ha,Perimetro_ml,Vertices'];
+          list.forEach((p, idx) => {
+            rows.push(`${idx + 1},"${p.nombre}","${p.propietario || ''}","${p.cedulaCat || ''}",${(p.area || 0).toFixed(2)},${((p.area || 0) / 10000).toFixed(4)},${(p.perim || 0).toFixed(2)},${(p.puntos || []).length}`);
+          });
+          downloadFileBlob('\uFEFF' + rows.join('\n'), `RESUMEN_PARCELAS_${Date.now()}.csv`, 'text/csv;charset=utf-8;');
+          notify('CSV Multiparcela descargado');
+        });
+        document.getElementById('m-sum-dxf')?.addEventListener('click', () => {
+          downloadFileBlob(GeoEngine.generateMultiParcelDXF(list), `${(state.projectName || 'PROYECTO').replace(/\s+/g, '_')}_MULTIPARCELA.dxf`, 'application/dxf');
+          notify('DXF Multiparcela descargado');
+        });
+        return;
+      }
+
+      if (state.modal === 'ota') {
+        const hasUpd = state.ota.hasUpdate;
+        root.innerHTML = `
+          <div class="w-full max-w-md rounded-2xl bg-[#131b2e] border ${hasUpd ? 'border-[#4edea3]/50' : 'border-[#2d3449]'} shadow-2xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-[#222a3d] flex items-center justify-between bg-[#0b1326]">
+              <div class="text-sm font-bold text-white">${hasUpd ? '🚀 Nueva Versión APK Disponible' : '🔄 Actualizaciones GeoGIS6 APK'}</div>
+              <button id="m-close" type="button" class="px-2 py-1 rounded-lg bg-[#171f33] text-xs text-[#bcc9cd]">✕</button>
+            </div>
+            <div class="p-4 space-y-3">
+              <div class="grid grid-cols-2 gap-2 font-mono text-[10px]">
+                <div class="p-2.5 rounded-xl bg-[#060e20] border border-[#222a3d]">
+                  <span class="text-[#869397] block">INSTALADA</span>
+                  <b class="text-white text-xs">v${escapeHtml(APP_VERSION_NAME)}</b>
+                  <span class="text-[9px] text-[#869397] block">Build ${APP_VERSION_CODE}</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-[#060e20] border ${hasUpd ? 'border-[#4edea3]/50' : 'border-[#222a3d]'}">
+                  <span class="text-[#869397] block">ÚLTIMA RELEASE</span>
+                  <b class="${hasUpd ? 'text-[#4edea3]' : 'text-[#4cd7f6]'} text-xs">v${escapeHtml(state.ota.latestVersionName)}</b>
+                  <span class="text-[9px] text-[#869397] block">Build ${state.ota.latestVersionCode}</span>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-[#060e20] text-[11px] text-[#bcc9cd] leading-relaxed">${escapeHtml(state.ota.notes)}</div>
+              <div class="grid grid-cols-2 gap-2">
+                <button id="m-ota-recheck" type="button" class="py-2.5 rounded-xl bg-[#171f33] border border-[#2d3449] text-[#4cd7f6] font-bold text-xs">${state.ota.checking ? 'Buscando...' : '🔍 Verificar Ahora'}</button>
+                <button id="m-ota-install" type="button" class="py-2.5 rounded-xl ${hasUpd ? 'bg-[#4edea3] text-[#003824]' : 'bg-[#4cd7f6] text-[#003640]'} font-bold text-xs">⬇ Descargar APK</button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.getElementById('m-close')?.addEventListener('click', closeModal);
+        document.getElementById('m-ota-recheck')?.addEventListener('click', () => checkApkUpdates(true));
+        document.getElementById('m-ota-install')?.addEventListener('click', () => triggerApkDownload(state.ota.downloadUrl));
+      }
+    }
+
+    function updateHeaderIndicators() {
+      const otaBtn = document.getElementById('btn-ota-header');
+      if (state.ota.hasUpdate) {
+        otaBtn.textContent = `⬆ v${state.ota.latestVersionName}`;
+        otaBtn.className = 'px-1.5 py-1 rounded-lg bg-[#4edea3]/20 border border-[#4edea3]/60 font-mono text-[8.5px] font-bold text-[#4edea3] animate-pulse active:scale-95';
+      } else {
+        otaBtn.textContent = `v${APP_VERSION_NAME}`;
+        otaBtn.className = 'px-1.5 py-1 rounded-lg bg-[#171f33] border border-[#2d3449] font-mono text-[8.5px] font-bold text-[#bcc9cd] active:scale-95';
+      }
+
+      const authBtn = document.getElementById('btn-auth-header');
+      if (state.auth.user) {
+        const shortName = (state.auth.user.nombre || state.auth.user.username || 'Cuenta').split(' ')[0];
+        authBtn.textContent = `👤 ${shortName}`;
+        authBtn.className = 'px-1.5 py-1 rounded-lg bg-[#4edea3]/15 border border-[#4edea3]/40 font-mono text-[8.5px] font-bold text-[#4edea3] active:scale-95 max-w-[92px] truncate';
+      } else {
+        authBtn.textContent = '🔐 Login';
+        authBtn.className = 'px-1.5 py-1 rounded-lg bg-[#171f33] border border-[#ffb95f]/40 font-mono text-[8.5px] font-bold text-[#ffb95f] active:scale-95 max-w-[92px] truncate';
+      }
+    }
+
     // ======================== RENDER ALL VIEWS ========================
     function renderAll() {
       const data = getComputedParcel();
@@ -639,15 +1526,17 @@
       // Header & Map Overlay
       const gpsBadge = document.getElementById('gps-badge');
       const gpsDot = document.getElementById('gps-dot');
-      document.getElementById('gps-badge-text').textContent = state.gnss.isLive ? `GPS ±${state.gnss.accuracy.toFixed(1)}m` : 'DEMO RTK';
-      gpsBadge.className = `flex items-center gap-1 px-2 py-0.5 rounded border shrink-0 ${state.gnss.isLive ? 'bg-[#4edea3]/15 border-[#4edea3]/40 text-[#4edea3]' : 'bg-[#ffb95f]/15 border-[#ffb95f]/40 text-[#ffb95f]'}`;
+      document.getElementById('gps-badge-text').textContent = state.gnss.isLive ? `±${state.gnss.accuracy.toFixed(0)}m` : 'DEMO';
+      gpsBadge.className = `flex items-center gap-1 px-1.5 py-0.5 rounded border shrink-0 ${state.gnss.isLive ? 'bg-[#4edea3]/15 border-[#4edea3]/40 text-[#4edea3]' : 'bg-[#ffb95f]/15 border-[#ffb95f]/40 text-[#ffb95f]'}`;
       gpsDot.className = `w-1.5 h-1.5 rounded-full animate-pulse ${state.gnss.isLive ? 'bg-[#4edea3]' : 'bg-[#ffb95f]'}`;
 
       document.getElementById('header-parcel-name').textContent = state.parcelName;
-      document.getElementById('header-parcel-stats').textContent = `${data.stats.areaM2.toFixed(1)} m² · ${data.enriched.length} pts`;
-      document.getElementById('dir-badge').textContent = state.direction === 'canoa_regven' ? 'PSAD56➔REGVEN' : 'REGVEN➔PSAD56';
+      document.getElementById('header-parcel-stats').textContent = `${data.stats.areaM2.toFixed(1)} m² · ${data.enriched.length} pts · ${state.savedParcels.length} parc`;
+      document.getElementById('dir-badge').textContent = state.direction === 'canoa_regven' ? 'PSAD56➔REG' : 'REG➔PSAD56';
       document.getElementById('method-huso-chip').textContent = `${state.method.toUpperCase()} • ${state.huso}N`;
+      document.getElementById('header-project-chip').textContent = `📁 ${state.projectName}`;
       document.getElementById('btn-cycle-layer').textContent = LAYER_TEXT[state.layerMode];
+      updateHeaderIndicators();
 
       document.getElementById('map-area-pill').textContent = `${data.stats.areaM2.toFixed(1)} m² (${data.stats.areaHa.toFixed(4)} ha)`;
       document.getElementById('map-perim-pill').textContent = `Per: ${data.stats.perimeter.toFixed(2)} m`;
@@ -662,7 +1551,7 @@
       updateMapGraphics(data);
 
       // View switcher
-      ['map', 'topographer', 'locate', 'vertices', 'export'].forEach((t) => {
+      ['map', 'topographer', 'locate', 'parcels', 'projects'].forEach((t) => {
         document.getElementById(`view-${t}`).classList.toggle('hidden-view', state.activeTab !== t);
       });
       document.querySelectorAll('.nav-btn').forEach((b) => {
@@ -683,7 +1572,7 @@
           <div class="p-3 rounded-2xl bg-[#131b2e] border border-[#222a3d] flex items-center justify-between gap-2">
             <div>
               <div class="text-xs font-bold text-white">📡 Mobile Topographer GNSS</div>
-              <div class="font-mono text-[10px] text-[#bcc9cd] mt-0.5">${state.gpsStatus}</div>
+              <div class="font-mono text-[10px] text-[#bcc9cd] mt-0.5">${escapeHtml(state.gpsStatus)}</div>
             </div>
             <button id="btn-toggle-gps" type="button" class="px-2.5 py-1.5 rounded-lg font-mono text-[10px] font-bold ${state.gpsEnabled ? 'bg-[#4edea3] text-[#003824]' : 'bg-[#222a3d] text-[#bcc9cd]'}">${state.gpsEnabled ? 'GPS ON' : 'GPS OFF'}</button>
           </div>
@@ -770,17 +1659,17 @@
             ` : ''}
             ${state.locateMode === 'utm' ? `
               <div class="grid grid-cols-3 gap-1.5">
-                <div><label class="font-mono text-[8px] text-[#869397] block">ESTE (X)</label><input id="in-loc-e" value="${state.locateEste}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2 py-1.5 font-mono text-xs text-white"/></div>
-                <div><label class="font-mono text-[8px] text-[#869397] block">NORTE (Y)</label><input id="in-loc-n" value="${state.locateNorte}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2 py-1.5 font-mono text-xs text-white"/></div>
-                <div><label class="font-mono text-[8px] text-[#869397] block">COTA (Z)</label><input id="in-loc-z" value="${state.locateZ}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2 py-1.5 font-mono text-xs text-[#ffb95f]"/></div>
+                <div><label class="font-mono text-[8px] text-[#869397] block">ESTE (X)</label><input id="in-loc-e" value="${escapeHtml(state.locateEste)}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2 py-1.5 font-mono text-xs text-white"/></div>
+                <div><label class="font-mono text-[8px] text-[#869397] block">NORTE (Y)</label><input id="in-loc-n" value="${escapeHtml(state.locateNorte)}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2 py-1.5 font-mono text-xs text-white"/></div>
+                <div><label class="font-mono text-[8px] text-[#869397] block">COTA (Z)</label><input id="in-loc-z" value="${escapeHtml(state.locateZ)}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2 py-1.5 font-mono text-xs text-[#ffb95f]"/></div>
               </div>
             ` : state.locateMode === 'geo' ? `
               <div class="grid grid-cols-2 gap-2">
-                <div><label class="font-mono text-[8px] text-[#869397] block">LATITUD (°)</label><input id="in-loc-lat" value="${state.locateLat}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2 py-1.5 font-mono text-xs text-white"/></div>
-                <div><label class="font-mono text-[8px] text-[#869397] block">LONGITUD (°)</label><input id="in-loc-lng" value="${state.locateLng}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2 py-1.5 font-mono text-xs text-white"/></div>
+                <div><label class="font-mono text-[8px] text-[#869397] block">LATITUD (°)</label><input id="in-loc-lat" value="${escapeHtml(state.locateLat)}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2 py-1.5 font-mono text-xs text-white"/></div>
+                <div><label class="font-mono text-[8px] text-[#869397] block">LONGITUD (°)</label><input id="in-loc-lng" value="${escapeHtml(state.locateLng)}" class="w-full bg-[#060e20] border border-[#2d3449] rounded-lg px-2 py-1.5 font-mono text-xs text-white"/></div>
               </div>
             ` : `
-              <textarea id="in-loc-batch" rows="4" class="w-full bg-[#060e20] border border-[#2d3449] rounded-xl p-2 font-mono text-[10px] text-[#dae2fd]">${state.locateBatch}</textarea>
+              <textarea id="in-loc-batch" rows="4" class="w-full bg-[#060e20] border border-[#2d3449] rounded-xl p-2 font-mono text-[10px] text-[#dae2fd]">${escapeHtml(state.locateBatch)}</textarea>
             `}
             <button id="btn-run-locate" type="button" class="w-full py-2.5 rounded-xl bg-[#4cd7f6] text-[#003640] font-bold text-xs">🎯 Localizar en Mapa y Activar Replanteo</button>
           </div>
@@ -789,7 +1678,7 @@
             <div class="flex items-center justify-between">
               <span class="font-mono text-[10px] font-bold text-[#ffb95f] uppercase">🎯 Diana de Replanteo (Drive-Me)</span>
               <select id="sel-stake-target" class="bg-[#060e20] border border-[#2d3449] rounded-lg px-2 py-1 font-mono text-[10px] text-[#4cd7f6]">
-                ${data.enriched.map((v) => `<option value="${v.id}" ${v.id === data.target?.id ? 'selected' : ''}>Obj: ${v.id}</option>`).join('')}
+                ${data.enriched.map((v) => `<option value="${escapeHtml(v.id)}" ${v.id === data.target?.id ? 'selected' : ''}>Obj: ${escapeHtml(v.id)}</option>`).join('')}
               </select>
             </div>
             <div class="flex items-center gap-3">
@@ -829,81 +1718,379 @@
         document.getElementById('btn-run-locate')?.addEventListener('click', runLocate);
       }
 
-      // Render Vertices & QA/QC View
-      if (state.activeTab === 'vertices') {
-        document.getElementById('view-vertices').innerHTML = `
-          <div class="grid grid-cols-2 gap-2">
-            <div class="p-2.5 rounded-xl bg-[#171f33] border border-[#222a3d]"><span class="font-mono text-[9px] text-[#869397] block">SUPERFICIE</span><span class="font-mono text-sm font-bold text-[#4edea3] tabular-nums">${data.stats.areaM2.toFixed(2)} m²</span><span class="font-mono text-[9px] text-[#bcc9cd] block">${data.stats.areaHa.toFixed(4)} ha</span></div>
-            <div class="p-2.5 rounded-xl bg-[#171f33] border border-[#222a3d]"><span class="font-mono text-[9px] text-[#869397] block">PERÍMETRO</span><span class="font-mono text-sm font-bold text-[#4cd7f6] tabular-nums">${data.stats.perimeter.toFixed(2)} m</span><span class="font-mono text-[9px] text-[#4edea3] block">QA/QC ≤ 0.001 m</span></div>
+      // Render TAB 4: PARCELAS (Desktop Parity) + VÉRTICES QA/QC
+      if (state.activeTab === 'parcels') {
+        const q = state.parcelSearchQuery.trim().toLowerCase();
+        const filteredParcels = !q
+          ? state.savedParcels
+          : state.savedParcels.filter((p) =>
+              [p.nombre, p.propietario, p.rif, p.municipio, p.parroquia, p.estado, p.ubicacionSector, p.cedulaCat]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase()
+                .includes(q)
+            );
+        const totalArea = state.savedParcels.reduce((s, p) => s + Math.abs(p.area || 0), 0);
+
+        document.getElementById('view-parcels').innerHTML = `
+          <!-- Subtab switcher -->
+          <div class="grid grid-cols-2 gap-1 bg-[#131b2e] border border-[#222a3d] p-1 rounded-xl font-mono text-[10px]">
+            <button data-psub="parcels" class="py-2 rounded-lg font-bold ${state.parcelsSubTab === 'parcels' ? 'bg-[#4cd7f6] text-[#003640]' : 'text-[#bcc9cd]'}">📦 Parcelas (${state.savedParcels.length})</button>
+            <button data-psub="vertices" class="py-2 rounded-lg font-bold ${state.parcelsSubTab === 'vertices' ? 'bg-[#4edea3] text-[#003824]' : 'text-[#bcc9cd]'}">📐 Vértices (${data.enriched.length})</button>
           </div>
-          <div class="p-3 rounded-xl bg-[#171f33] border border-[#222a3d] space-y-2">
-            <div class="grid grid-cols-3 gap-1 bg-[#060e20] p-1 rounded-xl font-mono text-[10px]">
-              <button data-m="rigida02" class="py-1.5 rounded-lg font-bold ${state.method === 'rigida02' ? 'bg-[#4edea3] text-[#003824]' : 'text-[#bcc9cd]'}">RIGIDA02</button>
-              <button data-m="badekas" class="py-1.5 rounded-lg font-bold ${state.method === 'badekas' ? 'bg-[#4edea3] text-[#003824]' : 'text-[#bcc9cd]'}">Badekas</button>
-              <button data-m="rigida" class="py-1.5 rounded-lg font-bold ${state.method === 'rigida' ? 'bg-[#4edea3] text-[#003824]' : 'text-[#bcc9cd]'}">Rígida IDW</button>
-            </div>
-            <div class="flex gap-2">
-              <button id="btn-audit-qaqc" class="flex-1 py-2 rounded-lg bg-[#222a3d] text-[#4cd7f6] font-mono text-[10px] font-bold">🛡 Validar Invarianza ≤ 1mm</button>
-              <button id="btn-reset-parcel" class="px-3 py-2 rounded-lg bg-[#222a3d] text-[#ffb95f] font-mono text-[10px] font-bold">↺</button>
-            </div>
-          </div>
-          <div class="space-y-2">
-            ${data.enriched.map((v) => `
-              <div class="p-2.5 rounded-xl border ${v.id === data.target?.id ? 'bg-[#222a3d] border-[#ffb95f]/50' : 'bg-[#171f33] border-[#222a3d]'}">
-                <div class="flex items-center justify-between mb-1.5">
-                  <div><span class="font-mono text-xs font-bold text-[#4cd7f6]">${v.id}</span> <span class="font-mono text-[10px] text-[#ffb95f]">${v.rumbo} · ${v.dist.toFixed(2)}m</span></div>
-                  <button data-stake-v="${v.id}" class="px-2 py-0.5 rounded bg-[#ffb95f]/20 font-mono text-[9px] font-bold text-[#ffb95f]">Replantear →</button>
-                </div>
-                <div class="grid grid-cols-3 gap-1.5 bg-[#060e20] p-2 rounded-lg font-mono text-[11px] tabular-nums">
-                  <div><span class="text-[8px] text-[#869397] block">ESTE</span><b class="text-white">${v.este.toFixed(3)}</b></div>
-                  <div><span class="text-[8px] text-[#869397] block">NORTE</span><b class="text-white">${v.norte.toFixed(3)}</b></div>
-                  <div><span class="text-[8px] text-[#869397] block">Z</span><b class="text-[#ffb95f]">${v.z.toFixed(2)}m</b></div>
-                </div>
+
+          ${state.parcelsSubTab === 'parcels' ? `
+            <!-- Save Active Polygon to Parcel List -->
+            <div class="p-3 rounded-2xl bg-[#131b2e] border border-[#4edea3]/30 space-y-2">
+              <div class="flex items-center justify-between font-mono text-[10px]">
+                <span class="text-[#4edea3] font-bold uppercase">Polígono Activo en Lienzo</span>
+                <span class="text-[#bcc9cd]">${data.stats.areaM2.toFixed(1)} m² · ${data.enriched.length} pts</span>
               </div>
-            `).join('')}
-          </div>
+              <div class="flex gap-1.5">
+                <input id="in-active-parcel-name" value="${escapeHtml(state.parcelName)}" placeholder="Nombre parcela..." class="flex-1 bg-[#060e20] border border-[#2d3449] rounded-xl px-2.5 py-2 text-xs text-white font-bold" />
+                <button id="btn-save-current-parcel" type="button" class="px-3 py-2 rounded-xl bg-[#4edea3] text-[#003824] font-bold text-[11px] shrink-0">💾 Guardar</button>
+                <button id="btn-new-parcel-blank" type="button" class="px-2.5 py-2 rounded-xl bg-[#171f33] border border-[#2d3449] text-[#4cd7f6] font-bold text-xs shrink-0" title="Guardar como Nueva Parcela">+</button>
+              </div>
+            </div>
+
+            <!-- Multi-Parcel Stats & Actions -->
+            <div class="p-2.5 rounded-2xl bg-[#171f33] border border-[#222a3d] space-y-2">
+              <div class="flex items-center justify-between font-mono text-[10px]">
+                <span class="text-[#4cd7f6] font-bold">LISTADO DE PARCELAS (${state.savedParcels.length})</span>
+                <span class="text-[#4edea3]">Total: ${(totalArea / 10000).toFixed(4)} ha</span>
+              </div>
+              <input id="in-parcel-search" value="${escapeHtml(state.parcelSearchQuery)}" placeholder="🔍 Buscar nombre, propietario, RIF, cédula..." class="w-full bg-[#060e20] border border-[#2d3449] rounded-xl px-3 py-2 text-xs text-white" />
+              <div class="grid grid-cols-4 gap-1.5 font-mono text-[9.5px]">
+                <button id="btn-select-all-parcels" type="button" class="py-1.5 rounded-lg bg-[#060e20] border border-[#2d3449] text-[#bcc9cd] font-bold">${state.selectedParcelIds.length === state.savedParcels.length && state.savedParcels.length > 0 ? '☑ Ninguna' : '☐ Todas'}</button>
+                <button id="btn-parcel-summary" type="button" class="py-1.5 rounded-lg bg-[#4cd7f6]/15 border border-[#4cd7f6]/40 text-[#4cd7f6] font-bold">📊 Resumen</button>
+                <button id="btn-parcel-multi-dxf" type="button" class="py-1.5 rounded-lg bg-[#4edea3]/15 border border-[#4edea3]/40 text-[#4edea3] font-bold">DXF Multi</button>
+                <button id="btn-parcel-csv" type="button" class="py-1.5 rounded-lg bg-[#ffb95f]/15 border border-[#ffb95f]/40 text-[#ffb95f] font-bold">CSV Excel</button>
+              </div>
+            </div>
+
+            <!-- Parcels List -->
+            <div class="space-y-2.5">
+              ${filteredParcels.length === 0 ? `
+                <div class="p-6 rounded-2xl bg-[#131b2e] border border-dashed border-[#2d3449] text-center space-y-1">
+                  <div class="text-xs font-bold text-[#bcc9cd]">No hay parcelas guardadas</div>
+                  <div class="text-[10px] text-[#869397]">Pulsa Guardar arriba o localiza vértices para agregar parcelas al proyecto.</div>
+                </div>
+              ` : filteredParcels.map((p) => {
+                const isSelected = state.selectedParcelIds.includes(p.id);
+                const isActive = state.activeParcelId === p.id;
+                const area = Math.abs(p.area || 0);
+                const ha = area / 10000;
+                const ptsCount = Array.isArray(p.puntos) ? p.puntos.length : 0;
+                return `
+                  <div class="p-2.5 rounded-2xl bg-[#131b2e] border ${isActive ? 'border-[#4edea3]/60' : 'border-[#222a3d]'} space-y-2">
+                    <div class="flex items-start gap-2.5">
+                      <input type="checkbox" data-sel-parcel="${escapeHtml(p.id)}" ${isSelected ? 'checked' : ''} class="mt-1 accent-[#4cd7f6] w-4 h-4 shrink-0" />
+                      ${renderParcelMinimapSvg(p)}
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-1">
+                          <span class="text-xs font-bold text-white truncate">${escapeHtml(p.nombre)}</span>
+                          ${isActive ? '<span class="px-1.5 py-0.5 rounded bg-[#4edea3]/20 text-[#4edea3] font-mono text-[8px] font-bold shrink-0">ACTIVA</span>' : ''}
+                        </div>
+                        <div class="font-mono text-[10px] text-[#4edea3] font-bold mt-0.5">${area.toFixed(2)} m² · ${ha.toFixed(4)} ha</div>
+                        <div class="font-mono text-[9px] text-[#bcc9cd]">Per: ${(p.perim || 0).toFixed(2)} ml · ${ptsCount} vértices</div>
+                        ${(p.propietario || p.municipio || p.cedulaCat) ? `
+                          <div class="font-mono text-[9px] text-[#869397] truncate mt-0.5">${escapeHtml([p.propietario, p.municipio, p.cedulaCat].filter(Boolean).join(' · '))}</div>
+                        ` : ''}
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-5 gap-1 font-mono text-[9px]">
+                      <button data-load-parcel="${escapeHtml(p.id)}" type="button" class="col-span-2 py-1.5 rounded-lg bg-[#4cd7f6] text-[#003640] font-bold">🗺 Ver / Replantear</button>
+                      <button data-edit-parcel="${escapeHtml(p.id)}" type="button" class="py-1.5 rounded-lg bg-[#171f33] border border-[#2d3449] text-[#dae2fd] font-bold">✏ Catastro</button>
+                      <button data-dxf-parcel="${escapeHtml(p.id)}" type="button" class="py-1.5 rounded-lg bg-[#171f33] border border-[#4edea3]/30 text-[#4edea3] font-bold">DXF</button>
+                      <button data-del-parcel="${escapeHtml(p.id)}" type="button" class="py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 font-bold">🗑</button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          ` : `
+            <!-- Sub-View: VÉRTICES Y MOTOR QA/QC -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="p-2.5 rounded-xl bg-[#171f33] border border-[#222a3d]"><span class="font-mono text-[9px] text-[#869397] block">SUPERFICIE</span><span class="font-mono text-sm font-bold text-[#4edea3] tabular-nums">${data.stats.areaM2.toFixed(2)} m²</span><span class="font-mono text-[9px] text-[#bcc9cd] block">${data.stats.areaHa.toFixed(4)} ha</span></div>
+              <div class="p-2.5 rounded-xl bg-[#171f33] border border-[#222a3d]"><span class="font-mono text-[9px] text-[#869397] block">PERÍMETRO</span><span class="font-mono text-sm font-bold text-[#4cd7f6] tabular-nums">${data.stats.perimeter.toFixed(2)} m</span><span class="font-mono text-[9px] text-[#4edea3] block">QA/QC ≤ 0.001 m</span></div>
+            </div>
+            <div class="p-3 rounded-xl bg-[#171f33] border border-[#222a3d] space-y-2">
+              <div class="grid grid-cols-3 gap-1 bg-[#060e20] p-1 rounded-xl font-mono text-[10px]">
+                <button data-m="rigida02" class="py-1.5 rounded-lg font-bold ${state.method === 'rigida02' ? 'bg-[#4edea3] text-[#003824]' : 'text-[#bcc9cd]'}">RIGIDA02</button>
+                <button data-m="badekas" class="py-1.5 rounded-lg font-bold ${state.method === 'badekas' ? 'bg-[#4edea3] text-[#003824]' : 'text-[#bcc9cd]'}">Badekas</button>
+                <button data-m="rigida" class="py-1.5 rounded-lg font-bold ${state.method === 'rigida' ? 'bg-[#4edea3] text-[#003824]' : 'text-[#bcc9cd]'}">Rígida IDW</button>
+              </div>
+              <div class="flex gap-1.5">
+                <button id="btn-audit-qaqc" class="flex-1 py-2 rounded-lg bg-[#222a3d] text-[#4cd7f6] font-mono text-[10px] font-bold">🛡 Validar ≤ 1mm</button>
+                <button id="btn-goto-add-v" class="px-2.5 py-2 rounded-lg bg-[#4edea3] text-[#003824] font-mono text-[10px] font-bold">+ Vértice</button>
+                <button id="btn-reset-parcel" class="px-2.5 py-2 rounded-lg bg-[#222a3d] text-[#ffb95f] font-mono text-[10px] font-bold">↺</button>
+              </div>
+            </div>
+            <div class="space-y-2">
+              ${data.enriched.map((v, idx) => `
+                <div class="p-2.5 rounded-xl border ${v.id === data.target?.id ? 'bg-[#222a3d] border-[#ffb95f]/50' : 'bg-[#171f33] border-[#222a3d]'}">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div><span class="font-mono text-xs font-bold text-[#4cd7f6]">${escapeHtml(v.id)}</span> <span class="font-mono text-[10px] text-[#ffb95f]">${v.rumbo} · ${v.dist.toFixed(2)}m</span></div>
+                    <div class="flex items-center gap-1">
+                      <button data-stake-v="${escapeHtml(v.id)}" class="px-2 py-0.5 rounded bg-[#ffb95f]/20 font-mono text-[9px] font-bold text-[#ffb95f]">Replantear →</button>
+                      ${data.enriched.length > 2 ? `<button data-del-v="${idx}" class="px-1.5 py-0.5 rounded bg-rose-500/20 font-mono text-[9px] font-bold text-rose-300">✕</button>` : ''}
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-3 gap-1.5 bg-[#060e20] p-2 rounded-lg font-mono text-[11px] tabular-nums">
+                    <div><span class="text-[8px] text-[#869397] block">ESTE</span><b class="text-white">${v.este.toFixed(3)}</b></div>
+                    <div><span class="text-[8px] text-[#869397] block">NORTE</span><b class="text-white">${v.norte.toFixed(3)}</b></div>
+                    <div><span class="text-[8px] text-[#869397] block">Z</span><b class="text-[#ffb95f]">${v.z.toFixed(2)}m</b></div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `}
         `;
+
+        document.querySelectorAll('[data-psub]').forEach((b) => b.addEventListener('click', () => { state.parcelsSubTab = b.getAttribute('data-psub'); renderAll(); }));
+        document.getElementById('in-active-parcel-name')?.addEventListener('input', (e) => { state.parcelName = e.target.value; });
+        document.getElementById('btn-save-current-parcel')?.addEventListener('click', () => saveActivePolygonToParcels());
+        document.getElementById('btn-new-parcel-blank')?.addEventListener('click', () => {
+          const idx = state.savedParcels.length + 1;
+          saveActivePolygonToParcels(`${state.parcelName || 'PARCELA'}-${idx}`);
+        });
+        document.getElementById('in-parcel-search')?.addEventListener('input', (e) => {
+          const val = e.target.value;
+          const pos = e.target.selectionStart;
+          state.parcelSearchQuery = val;
+          renderAll();
+          const inp = document.getElementById('in-parcel-search');
+          if (inp) { inp.focus(); inp.setSelectionRange(pos, pos); }
+        });
+        document.getElementById('btn-select-all-parcels')?.addEventListener('click', () => {
+          if (state.selectedParcelIds.length === state.savedParcels.length) state.selectedParcelIds = [];
+          else state.selectedParcelIds = state.savedParcels.map((p) => p.id);
+          renderAll();
+        });
+        document.getElementById('btn-parcel-summary')?.addEventListener('click', () => { state.modal = 'summary'; renderModal(); });
+        document.getElementById('btn-parcel-multi-dxf')?.addEventListener('click', () => {
+          const list = state.selectedParcelIds.length > 0
+            ? state.savedParcels.filter((p) => state.selectedParcelIds.includes(p.id))
+            : state.savedParcels;
+          if (list.length === 0) return notify('No hay parcelas para exportar');
+          downloadFileBlob(GeoEngine.generateMultiParcelDXF(list), `${(state.projectName || 'PROYECTO').replace(/\s+/g, '_')}_MULTIPARCELA.dxf`, 'application/dxf');
+          notify(`DXF Multiparcela (${list.length}) descargado`);
+        });
+        document.getElementById('btn-parcel-csv')?.addEventListener('click', () => {
+          const list = state.selectedParcelIds.length > 0
+            ? state.savedParcels.filter((p) => state.selectedParcelIds.includes(p.id))
+            : state.savedParcels;
+          const rows = ['N°,Parcela,Propietario,CedulaCatastral,Area_m2,Area_ha,Perimetro_ml,Vertices'];
+          list.forEach((p, idx) => rows.push(`${idx + 1},"${p.nombre}","${p.propietario || ''}","${p.cedulaCat || ''}",${(p.area || 0).toFixed(2)},${((p.area || 0) / 10000).toFixed(4)},${(p.perim || 0).toFixed(2)},${(p.puntos || []).length}`));
+          downloadFileBlob('\uFEFF' + rows.join('\n'), `PARCELAS_${Date.now()}.csv`, 'text/csv;charset=utf-8;');
+          notify('CSV Excel descargado');
+        });
+        document.querySelectorAll('[data-sel-parcel]').forEach((cb) => cb.addEventListener('change', (e) => {
+          const pid = cb.getAttribute('data-sel-parcel');
+          if (e.target.checked) { if (!state.selectedParcelIds.includes(pid)) state.selectedParcelIds.push(pid); }
+          else state.selectedParcelIds = state.selectedParcelIds.filter((x) => x !== pid);
+        }));
+        document.querySelectorAll('[data-load-parcel]').forEach((b) => b.addEventListener('click', () => loadSavedParcelIntoWorkspace(b.getAttribute('data-load-parcel'), true)));
+        document.querySelectorAll('[data-edit-parcel]').forEach((b) => b.addEventListener('click', () => { state.editingParcelId = b.getAttribute('data-edit-parcel'); state.modal = 'editParcel'; renderModal(); }));
+        document.querySelectorAll('[data-dxf-parcel]').forEach((b) => b.addEventListener('click', () => {
+          const p = state.savedParcels.find((x) => x.id === b.getAttribute('data-dxf-parcel'));
+          if (!p) return;
+          downloadFileBlob(GeoEngine.generateMultiParcelDXF([p]), `${p.nombre.replace(/\s+/g, '_')}.dxf`, 'application/dxf');
+          notify(`DXF de "${p.nombre}" descargado`);
+        }));
+        document.querySelectorAll('[data-del-parcel]').forEach((b) => b.addEventListener('click', () => {
+          const pid = b.getAttribute('data-del-parcel');
+          state.savedParcels = state.savedParcels.filter((p) => p.id !== pid);
+          state.selectedParcelIds = state.selectedParcelIds.filter((x) => x !== pid);
+          if (state.activeParcelId === pid) state.activeParcelId = null;
+          persistWorkspaceLocal();
+          renderAll();
+          notify('Parcela eliminada del proyecto');
+        }));
+
+        // Vertices sub-tab listeners
         document.querySelectorAll('[data-m]').forEach((b) => b.addEventListener('click', () => { state.method = b.getAttribute('data-m'); renderAll(); }));
         document.querySelectorAll('[data-stake-v]').forEach((b) => b.addEventListener('click', () => { state.stakeTargetId = b.getAttribute('data-stake-v'); state.activeTab = 'locate'; renderAll(); }));
+        document.querySelectorAll('[data-del-v]').forEach((b) => b.addEventListener('click', () => {
+          const idx = Number(b.getAttribute('data-del-v'));
+          state.vertices.splice(idx, 1);
+          persistWorkspaceLocal();
+          renderAll();
+        }));
         document.getElementById('btn-audit-qaqc')?.addEventListener('click', () => notify('QA/QC IGVSB Aprobado · ΔDistancia ≤ 0.001 m'));
-        document.getElementById('btn-reset-parcel')?.addEventListener('click', () => { state.vertices = JSON.parse(JSON.stringify(DEFAULT_VERTICES)); state.parcelName = 'PARCELA-09B'; state.stakeTargetId = 'V-05'; renderAll(); notify('Parcela restaurada'); });
+        document.getElementById('btn-goto-add-v')?.addEventListener('click', () => { state.activeTab = 'locate'; renderAll(); });
+        document.getElementById('btn-reset-parcel')?.addEventListener('click', () => { state.vertices = JSON.parse(JSON.stringify(DEFAULT_VERTICES)); state.parcelName = 'PARCELA-09B'; state.stakeTargetId = 'V-05'; persistWorkspaceLocal(); renderAll(); notify('Parcela restaurada'); });
       }
 
-      // Render Export & Cloud View
-      if (state.activeTab === 'export') {
-        document.getElementById('view-export').innerHTML = `
-          <div class="p-3 rounded-2xl bg-[#131b2e] border border-[#222a3d]">
-            <div class="text-xs font-bold text-white">Exportación CAD &amp; Sincronización Nube</div>
-            <div class="font-mono text-[10px] text-[#bcc9cd] mt-0.5">${state.parcelName} · ${data.enriched.length} vértices · Servidor: ${state.cloudStatus}</div>
+      // Render TAB 5: PROYECTOS, LOGIN, EXPORTACIÓN CAD Y AUTO-UPDATE OTA
+      if (state.activeTab === 'projects') {
+        const u = state.auth.user;
+        document.getElementById('view-projects').innerHTML = `
+          <!-- 1. CUENTA Y LOGIN CLOUD -->
+          <div class="p-3 rounded-2xl bg-[#131b2e] border ${u ? 'border-[#4edea3]/35' : 'border-[#ffb95f]/35'} space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-white truncate">${u ? `👤 ${escapeHtml(u.nombre || u.username)}` : '🔐 Sesión Cloud (PostgreSQL)'}</div>
+                <div class="font-mono text-[9.5px] text-[#bcc9cd] truncate">${u ? `${escapeHtml(u.email)} · ${escapeHtml(u.rol)}` : `Modo Campo Local · ${escapeHtml(state.cloudStatus)}`}</div>
+              </div>
+              <button id="prj-open-login" type="button" class="px-2.5 py-1.5 rounded-xl font-bold text-[10.5px] shrink-0 ${u ? 'bg-[#171f33] border border-[#2d3449] text-[#4cd7f6]' : 'bg-[#4edea3] text-[#003824]'}">${u ? 'Cuenta' : 'Iniciar Sesión'}</button>
+            </div>
           </div>
-          <button id="exp-dxf" type="button" class="w-full p-3.5 rounded-xl bg-[#4cd7f6] text-[#003640] flex items-center justify-between text-left"><div><div class="text-xs font-bold">Descargar .DXF (AutoCAD / CivilCAD)</div><div class="text-[10px] opacity-80">Poligonal cerrada + vértices UTM</div></div><span class="font-mono font-bold">⬇</span></button>
-          <button id="exp-copy" type="button" class="w-full p-3.5 rounded-xl bg-[#171f33] border border-[#2d3449] flex items-center justify-between text-left"><div><div class="text-xs font-bold text-white">Copiar CivilCAD (P,E,N,Z,D)</div><div class="text-[10px] text-[#bcc9cd]">Portapapeles inmediato</div></div><span class="font-mono text-xs text-[#4edea3] font-bold">COPIAR</span></button>
-          <button id="exp-kml" type="button" class="w-full p-3.5 rounded-xl bg-[#171f33] border border-[#2d3449] flex items-center justify-between text-left"><div><div class="text-xs font-bold text-white">Exportar .KML Google Earth</div><div class="text-[10px] text-[#bcc9cd]">Georreferenciado WGS84</div></div><span class="font-mono text-xs text-[#4cd7f6] font-bold">⬇</span></button>
-          <button id="exp-cloud-open" type="button" class="w-full p-3.5 rounded-xl bg-[#171f33] border border-[#4edea3]/35 flex items-center justify-between text-left"><div><div class="text-xs font-bold text-[#4edea3]">Abrir Panel Nube GeoGIS6 (PostgreSQL)</div><div class="text-[10px] text-[#bcc9cd]">Sincronizar proyectos con cuenta corporativa</div></div><span class="font-mono text-xs text-[#4edea3] font-bold">ABRIR ↗</span></button>
+
+          <!-- 2. GESTOR DEL PROYECTO ACTIVO -->
+          <div class="p-3 rounded-2xl bg-[#171f33] border border-[#222a3d] space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[10px] font-bold text-[#4cd7f6] uppercase">📁 Gestión de Proyecto</span>
+              <button id="prj-new-btn" type="button" class="px-2 py-0.5 rounded bg-[#4edea3]/15 text-[#4edea3] font-mono text-[9.5px] font-bold">+ Nuevo</button>
+            </div>
+            <input id="in-project-name" value="${escapeHtml(state.projectName)}" placeholder="Nombre del proyecto..." class="w-full bg-[#060e20] border border-[#2d3449] rounded-xl px-3 py-2 text-xs font-bold text-white" />
+            <div class="grid grid-cols-2 gap-2">
+              <button id="prj-save-cloud" type="button" class="py-2 rounded-xl bg-[#4edea3] text-[#003824] font-bold text-[11px]">${state.cloudSaving ? 'Guardando...' : (state.currentProjectId ? '☁ Actualizar Nube' : '☁ Guardar en Nube')}</button>
+              <button id="prj-save-local" type="button" class="py-2 rounded-xl bg-[#131b2e] border border-[#4cd7f6]/40 text-[#4cd7f6] font-bold text-[11px]">💾 Guardar Local</button>
+              <button id="prj-download-json" type="button" class="py-2 rounded-xl bg-[#060e20] border border-[#2d3449] text-[#dae2fd] font-bold text-[10.5px]">⬇ Exportar .JSON</button>
+              <label class="py-2 rounded-xl bg-[#060e20] border border-dashed border-[#4cd7f6]/40 text-[#4cd7f6] font-bold text-[10.5px] text-center cursor-pointer">
+                📂 Importar .JSON
+                <input id="prj-import-file" type="file" accept=".json" class="hidden" />
+              </label>
+            </div>
+          </div>
+
+          <!-- 3. PROYECTOS EN LA NUBE (POSTGRESQL) -->
+          <div class="p-3 rounded-2xl bg-[#131b2e] border border-[#222a3d] space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[10px] font-bold text-[#4edea3] uppercase">☁ Proyectos en Nube (${state.cloudProjects.length})</span>
+              <button id="prj-refresh-cloud" type="button" class="px-2 py-0.5 rounded bg-[#171f33] font-mono text-[9.5px] text-[#4cd7f6]">${state.cloudLoading ? 'Cargando...' : '↻ Sincronizar'}</button>
+            </div>
+            ${!u ? `
+              <div class="p-2.5 rounded-xl bg-[#060e20] text-[10.5px] text-[#bcc9cd] flex items-center justify-between gap-2">
+                <span>Inicia sesión para ver tus proyectos guardados en PostgreSQL.</span>
+                <button id="prj-login-inline" type="button" class="px-2 py-1 rounded bg-[#4edea3] text-[#003824] font-bold text-[10px] shrink-0">Login</button>
+              </div>
+            ` : state.cloudProjects.length === 0 ? `
+              <div class="p-3 rounded-xl bg-[#060e20] text-center text-[10.5px] text-[#869397]">No tienes proyectos guardados en la nube aún.</div>
+            ` : `
+              <div class="space-y-1.5 max-h-48 overflow-y-auto">
+                ${state.cloudProjects.map((cp) => `
+                  <div class="p-2 rounded-xl bg-[#060e20] border ${state.currentProjectId === cp.id ? 'border-[#4edea3]/60' : 'border-[#222a3d]'} flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                      <div class="text-xs font-bold text-white truncate">${escapeHtml(cp.nombre)}</div>
+                      <div class="font-mono text-[9px] text-[#869397]">${cp.actualizado ? new Date(cp.actualizado).toLocaleDateString('es-VE') : ''}</div>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0 font-mono text-[9.5px]">
+                      <button data-load-cloud-prj="${escapeHtml(cp.id)}" type="button" class="px-2 py-1 rounded-lg bg-[#4cd7f6] text-[#003640] font-bold">Cargar</button>
+                      <button data-del-cloud-prj="${escapeHtml(cp.id)}" type="button" class="px-2 py-1 rounded-lg bg-rose-500/20 text-rose-300 font-bold">🗑</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+
+          <!-- 4. PROYECTOS GUARDADOS EN DISPOSITIVO (OFFLINE) -->
+          ${state.localProjects.length > 0 ? `
+            <div class="p-3 rounded-2xl bg-[#131b2e] border border-[#222a3d] space-y-2">
+              <div class="font-mono text-[10px] font-bold text-[#ffb95f] uppercase">📱 Proyectos Locales Offline (${state.localProjects.length})</div>
+              <div class="space-y-1.5 max-h-40 overflow-y-auto">
+                ${state.localProjects.map((lp) => `
+                  <div class="p-2 rounded-xl bg-[#060e20] border border-[#222a3d] flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                      <div class="text-xs font-bold text-white truncate">${escapeHtml(lp.nombre)}</div>
+                      <div class="font-mono text-[9px] text-[#869397]">${(lp.data?.parcels || []).length} parcelas · ${new Date(lp.actualizado).toLocaleDateString('es-VE')}</div>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0 font-mono text-[9.5px]">
+                      <button data-load-local-prj="${escapeHtml(lp.id)}" type="button" class="px-2 py-1 rounded-lg bg-[#ffb95f] text-[#2a1700] font-bold">Cargar</button>
+                      <button data-del-local-prj="${escapeHtml(lp.id)}" type="button" class="px-2 py-1 rounded-lg bg-rose-500/20 text-rose-300 font-bold">✕</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- 5. EXPORTACIÓN RÁPIDA DE PARCELA ACTIVA -->
+          <div class="p-3 rounded-2xl bg-[#171f33] border border-[#222a3d] space-y-2">
+            <div class="font-mono text-[10px] font-bold text-[#4cd7f6] uppercase">⬇ Exportar Parcela Activa (${escapeHtml(state.parcelName)})</div>
+            <div class="grid grid-cols-3 gap-1.5 font-mono text-[10px]">
+              <button id="exp-dxf" type="button" class="py-2 rounded-xl bg-[#4cd7f6] text-[#003640] font-bold">.DXF CAD</button>
+              <button id="exp-kml" type="button" class="py-2 rounded-xl bg-[#131b2e] border border-[#4cd7f6]/40 text-[#4cd7f6] font-bold">.KML Earth</button>
+              <button id="exp-copy" type="button" class="py-2 rounded-xl bg-[#131b2e] border border-[#4edea3]/40 text-[#4edea3] font-bold">P,E,N,Z</button>
+            </div>
+          </div>
+
+          <!-- 6. ACTUALIZACIÓN AUTOMÁTICA DEL APK (OTA) -->
+          <div class="p-3 rounded-2xl bg-[#131b2e] border ${state.ota.hasUpdate ? 'border-[#4edea3]/60' : 'border-[#222a3d]'} space-y-2">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-xs font-bold text-white">🚀 Actualizaciones Automáticas APK</div>
+                <div class="font-mono text-[9.5px] text-[#bcc9cd]">Instalada: v${escapeHtml(APP_VERSION_NAME)} (Build ${APP_VERSION_CODE}) · Última: v${escapeHtml(state.ota.latestVersionName)}</div>
+              </div>
+              <span class="px-2 py-0.5 rounded font-mono text-[9px] font-bold ${state.ota.hasUpdate ? 'bg-[#4edea3]/20 text-[#4edea3]' : 'bg-[#171f33] text-[#4cd7f6]'}">${state.ota.hasUpdate ? 'DISPONIBLE' : 'AL DÍA'}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button id="ota-check-btn" type="button" class="py-2 rounded-xl bg-[#171f33] border border-[#2d3449] text-[#4cd7f6] font-bold text-[11px]">${state.ota.checking ? 'Comprobando...' : '🔍 Buscar Actualización'}</button>
+              <button id="ota-update-btn" type="button" class="py-2 rounded-xl ${state.ota.hasUpdate ? 'bg-[#4edea3] text-[#003824]' : 'bg-[#222a3d] text-[#dae2fd]'} font-bold text-[11px]">⬇ Actualizar APK</button>
+            </div>
+          </div>
         `;
+
+        document.getElementById('prj-open-login')?.addEventListener('click', () => { state.modal = 'login'; renderModal(); });
+        document.getElementById('prj-login-inline')?.addEventListener('click', () => { state.modal = 'login'; renderModal(); });
+        document.getElementById('in-project-name')?.addEventListener('input', (e) => { state.projectName = e.target.value; persistWorkspaceLocal(); });
+        document.getElementById('prj-new-btn')?.addEventListener('click', () => {
+          state.projectName = 'Nuevo Proyecto';
+          state.currentProjectId = null;
+          state.savedParcels = [];
+          state.selectedParcelIds = [];
+          state.activeParcelId = null;
+          state.parcelName = 'PARCELA-01';
+          state.vertices = JSON.parse(JSON.stringify(DEFAULT_VERTICES));
+          persistWorkspaceLocal();
+          renderAll();
+          notify('Nuevo proyecto inicializado');
+        });
+        document.getElementById('prj-save-cloud')?.addEventListener('click', saveProjectToCloud);
+        document.getElementById('prj-save-local')?.addEventListener('click', saveCurrentProjectToLocalList);
+        document.getElementById('prj-download-json')?.addEventListener('click', () => {
+          downloadFileBlob(JSON.stringify(buildProjectPayload(), null, 2), `${(state.projectName || 'proyecto').replace(/\s+/g, '_')}_geogis6.json`, 'application/json');
+          notify('Proyecto .JSON descargado');
+        });
+        document.getElementById('prj-import-file')?.addEventListener('change', (ev) => {
+          const f = ev.target.files?.[0];
+          if (!f) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try { applyImportedProjectData(JSON.parse(e.target.result), null); }
+            catch { notify('Archivo .JSON inválido'); }
+          };
+          reader.readAsText(f);
+        });
+        document.getElementById('prj-refresh-cloud')?.addEventListener('click', fetchCloudProjects);
+        document.querySelectorAll('[data-load-cloud-prj]').forEach((b) => b.addEventListener('click', () => loadCloudProjectById(b.getAttribute('data-load-cloud-prj'))));
+        document.querySelectorAll('[data-del-cloud-prj]').forEach((b) => b.addEventListener('click', () => deleteCloudProjectById(b.getAttribute('data-del-cloud-prj'))));
+        document.querySelectorAll('[data-load-local-prj]').forEach((b) => b.addEventListener('click', () => {
+          const lp = state.localProjects.find((x) => x.id === b.getAttribute('data-load-local-prj'));
+          if (lp) { applyImportedProjectData(lp.data, null); state.activeTab = 'parcels'; renderAll(); }
+        }));
+        document.querySelectorAll('[data-del-local-prj]').forEach((b) => b.addEventListener('click', () => {
+          const id = b.getAttribute('data-del-local-prj');
+          state.localProjects = state.localProjects.filter((x) => x.id !== id);
+          localStorage.setItem(STORAGE_KEY_LOCAL_PROJECTS, JSON.stringify(state.localProjects));
+          renderAll();
+        }));
         document.getElementById('exp-dxf')?.addEventListener('click', () => {
-          const blob = new Blob([GeoEngine.generateDXF(data.enriched)], { type: 'application/dxf' });
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = `${state.parcelName}_Huso${state.huso}N.dxf`;
-          a.click();
+          downloadFileBlob(GeoEngine.generateDXF(data.enriched, state.parcelName), `${state.parcelName}_Huso${state.huso}N.dxf`, 'application/dxf');
           notify('Archivo .DXF descargado');
+        });
+        document.getElementById('exp-kml')?.addEventListener('click', () => {
+          downloadFileBlob(GeoEngine.generateKML(data.enriched, state.parcelName), `${state.parcelName}.kml`, 'application/vnd.google-earth.kml+xml');
+          notify('Archivo .KML descargado');
         });
         document.getElementById('exp-copy')?.addEventListener('click', async () => {
           try { await navigator.clipboard.writeText(GeoEngine.generateCivilCAD(data.enriched, state.parcelName)); } catch {}
           notify('Coordenadas P,E,N,Z,D copiadas');
         });
-        document.getElementById('exp-kml')?.addEventListener('click', () => {
-          const blob = new Blob([GeoEngine.generateKML(data.enriched, state.parcelName)], { type: 'application/vnd.google-earth.kml+xml' });
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = `${state.parcelName}.kml`;
-          a.click();
-          notify('Archivo .KML descargado');
-        });
-        document.getElementById('exp-cloud-open')?.addEventListener('click', () => {
-          window.location.href = `${CLOUD_URL}/login`;
-        });
+        document.getElementById('ota-check-btn')?.addEventListener('click', () => checkApkUpdates(true));
+        document.getElementById('ota-update-btn')?.addEventListener('click', () => triggerApkDownload(state.ota.downloadUrl));
       }
     }
 
@@ -921,6 +2108,7 @@
       state.stakeTargetId = id;
       state.averagingActive = false;
       state.averagingSamples = [];
+      persistWorkspaceLocal();
       notify(`Vértice ${id} grabado (±${state.gnss.accuracy.toFixed(1)}m)`);
       renderAll();
     }
@@ -939,6 +2127,7 @@
         state.vertices.push({ id, lat: geo.lat, lng: geo.lng, z, rms: 0.005 });
         state.stakeTargetId = id;
         state.activeTab = 'map';
+        persistWorkspaceLocal();
         renderAll();
         if (leafletMap) leafletMap.setView([geo.lat, geo.lng], 19);
         notify(`Punto ${id} localizado y replanteo activo`);
@@ -950,6 +2139,7 @@
         state.vertices.push({ id, lat, lng, z, rms: 0.005 });
         state.stakeTargetId = id;
         state.activeTab = 'map';
+        persistWorkspaceLocal();
         renderAll();
         if (leafletMap) leafletMap.setView([lat, lng], 19);
         notify(`Coordenada ${id} localizada`);
@@ -971,11 +2161,13 @@
           verts.push({ id, lat: geo.lat, lng: geo.lng, z, rms: 0.005 });
         });
         if (verts.length < 2) return notify('Pega al menos 2 vértices válidos');
-        state.parcelName = 'PARCELA_LOCALIZADA';
+        state.parcelName = `PARCELA_LOC_${state.savedParcels.length + 1}`;
+        state.activeParcelId = null;
         state.huso = state.locateHuso;
         state.vertices = verts;
         state.stakeTargetId = verts[0].id;
         state.activeTab = 'map';
+        persistWorkspaceLocal();
         renderAll();
         if (leafletMap) leafletMap.fitBounds(verts.map((v) => [v.lat, v.lng]), { padding: [36, 36] });
         notify(`Parcela trazada con ${verts.length} vértices`);
@@ -1011,15 +2203,16 @@
         const res = await fetch(`${CLOUD_URL}/api/health`, { cache: 'no-store' });
         const d = await res.json().catch(() => null);
         state.cloudStatus = d && d.database === 'connected' ? 'PostgreSQL Conectado' : 'En línea';
+        if (state.auth.token) fetchCloudProjects();
       } catch {
         state.cloudStatus = 'Offline (Modo Campo)';
       }
-      if (state.activeTab === 'export') renderAll();
+      if (state.activeTab === 'projects') renderAll();
     }
 
     // Bind static buttons
     document.querySelectorAll('.nav-btn').forEach((b) => b.addEventListener('click', () => { state.activeTab = b.getAttribute('data-tab'); renderAll(); if (state.activeTab === 'map' && leafletMap) setTimeout(() => leafletMap.invalidateSize(), 120); }));
-    document.getElementById('btn-toggle-dir').addEventListener('click', () => { state.direction = state.direction === 'canoa_regven' ? 'regven_canoa' : 'canoa_regven'; renderAll(); });
+    document.getElementById('btn-toggle-dir').addEventListener('click', () => { state.direction = state.direction === 'canoa_regven' ? 'regven_canoa' : 'canoa_regven'; persistWorkspaceLocal(); renderAll(); });
     document.getElementById('btn-toggle-map-engine').addEventListener('click', () => {
       state.mapEngine = state.mapEngine === 'leaflet' ? 'svg' : 'leaflet';
       renderAll();
@@ -1034,6 +2227,7 @@
     document.getElementById('btn-cycle-layer').addEventListener('click', cycleLayer);
     document.getElementById('fab-layers').addEventListener('click', cycleLayer);
     document.getElementById('fab-capture').addEventListener('click', captureGpsVertex);
+    document.getElementById('fab-save-parcel').addEventListener('click', () => saveActivePolygonToParcels());
     document.getElementById('fab-center-gps').addEventListener('click', () => {
       state.gpsEnabled = true;
       startGpsWatch();
@@ -1041,17 +2235,19 @@
       notify('Centrado en GPS en tiempo real');
     });
     document.getElementById('fab-goto-locate').addEventListener('click', () => { state.activeTab = 'locate'; renderAll(); });
-    document.getElementById('fab-goto-topo').addEventListener('click', () => { state.activeTab = 'topographer'; renderAll(); });
     document.getElementById('map-stake-pill').addEventListener('click', () => { state.activeTab = 'locate'; renderAll(); });
-    document.getElementById('btn-cloud-sync').addEventListener('click', () => { probeCloud().then(() => notify(`Nube: ${state.cloudStatus}`)); });
+    document.getElementById('btn-auth-header').addEventListener('click', () => { state.modal = 'login'; renderModal(); });
+    document.getElementById('btn-ota-header').addEventListener('click', () => { state.modal = 'ota'; renderModal(); checkApkUpdates(false); });
 
     window.addEventListener('deviceorientation', (ev) => {
       const h = ev.webkitCompassHeading ?? (typeof ev.alpha === 'number' ? (360 - ev.alpha) % 360 : null);
       if (h !== null && !Number.isNaN(h)) state.compassHeading = Math.round(h * 10) / 10;
     });
 
+    hydratePersistence();
     startGpsWatch();
     probeCloud();
+    checkApkUpdates(false);
     renderAll();
   </script>
 </body>
