@@ -45,7 +45,10 @@
       display: flex;
       flex-direction: column;
       width: 100%;
-      height: 100dvh;
+      height: 100%;
+      max-height: 100dvh;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
       background: #0b1326;
       overflow: hidden;
       position: relative;
@@ -161,21 +164,21 @@
         </div>
 
         <!-- Ergonomic Right-Edge FAB Stack -->
-        <div class="absolute top-12 right-2.5 z-20 flex flex-col items-center gap-2">
-          <button id="fab-capture" type="button" class="w-13 h-13 p-2.5 rounded-full bg-[#4cd7f6] active:scale-95 text-[#003640] shadow-xl flex flex-col items-center justify-center">
+        <div class="absolute top-10 right-2.5 z-20 flex flex-col items-center gap-1.5">
+          <button id="fab-capture" type="button" class="w-12 h-12 p-2 rounded-full bg-[#4cd7f6] active:scale-95 text-[#003640] shadow-xl flex flex-col items-center justify-center">
             <span class="font-bold text-base leading-none">+</span>
-            <span class="font-mono text-[8px] font-extrabold uppercase leading-none">GRABAR</span>
+            <span class="font-mono text-[7.5px] font-extrabold uppercase leading-none">GRABAR</span>
           </button>
-          <button id="fab-center-gps" type="button" class="w-10 h-10 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#4edea3] flex items-center justify-center shadow-lg font-mono text-sm" title="Centrar GPS Real">⌖</button>
-          <button id="fab-goto-locate" type="button" class="w-10 h-10 rounded-full bg-[#171f33]/95 border border-[#ffb95f]/40 text-[#ffb95f] flex items-center justify-center shadow-lg font-mono text-sm" title="Localizar Parcela">🎯</button>
-          <button id="fab-goto-topo" type="button" class="w-10 h-10 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#4cd7f6] flex flex-col items-center justify-center shadow-lg">
+          <button id="fab-center-gps" type="button" class="w-9 h-9 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#4edea3] flex items-center justify-center shadow-lg font-mono text-sm" title="Centrar GPS Real">⌖</button>
+          <button id="fab-goto-locate" type="button" class="w-9 h-9 rounded-full bg-[#171f33]/95 border border-[#ffb95f]/40 text-[#ffb95f] flex items-center justify-center shadow-lg font-mono text-sm" title="Localizar Parcela">🎯</button>
+          <button id="fab-goto-topo" type="button" class="w-9 h-9 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#4cd7f6] flex flex-col items-center justify-center shadow-lg">
             <span class="font-mono text-[8px] font-bold">GNSS</span>
           </button>
-          <button id="fab-layers" type="button" class="w-10 h-10 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#dae2fd] flex items-center justify-center shadow-lg font-mono text-xs">▤</button>
+          <button id="fab-layers" type="button" class="w-9 h-9 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#dae2fd] flex items-center justify-center shadow-lg font-mono text-xs">▤</button>
         </div>
 
         <!-- Live Rover Telemetry Tray -->
-        <div class="absolute inset-x-2.5 bottom-2.5 z-20 p-2.5 rounded-2xl bg-[#131b2e]/95 border border-[#2d3449] backdrop-blur-xl shadow-2xl">
+        <div class="absolute inset-x-2.5 bottom-2 z-20 p-2 rounded-2xl bg-[#131b2e]/95 border border-[#2d3449] backdrop-blur-xl shadow-2xl">
           <div class="flex items-center justify-between mb-1.5">
             <span class="font-mono text-[10px] font-bold text-[#4cd7f6]">📡 POSICIÓN ROVER EN TIEMPO REAL</span>
             <span id="tray-acc" class="font-mono text-[9px] text-[#4edea3]">±3.2 m</span>
@@ -202,7 +205,7 @@
     </main>
 
     <!-- 3. NATIVE ANDROID BOTTOM NAVIGATION BAR (5 MODULES) -->
-    <nav class="h-16 shrink-0 bg-[#060e20]/95 backdrop-blur-xl border-t border-[#171f33] z-40 grid grid-cols-5 px-1">
+    <nav style="min-height: 68px; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);" class="shrink-0 bg-[#060e20]/95 backdrop-blur-xl border-t border-[#171f33] z-40 grid grid-cols-5 px-1 pt-1">
       <button data-tab="map" type="button" class="nav-btn btn-tab-active flex flex-col items-center justify-center">
         <div class="nav-pill flex items-center justify-center w-9 h-6 rounded-full text-sm">🗺</div>
         <span class="font-mono text-[8px] font-bold uppercase tracking-wider mt-0.5">Mapa</span>
