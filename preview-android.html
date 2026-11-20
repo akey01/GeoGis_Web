@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>GeoGIS6 Android Preview — Diseño Stitch Mobile HUD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { overscroll-behavior: none; background: #050914; }
+    ::-webkit-scrollbar { display: none; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body class="min-h-[100dvh] w-full text-[#dae2fd] font-sans flex flex-col items-center justify-start sm:justify-center sm:py-4 sm:px-4">
+  <!-- Toast notification -->
+  <div id="toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-[120] hidden px-3.5 py-2 rounded-xl bg-[#131b2e]/95 border border-[#4edea3]/40 text-[#4edea3] font-mono text-[11px] shadow-2xl backdrop-blur-md"></div>
+
+  <!-- Desktop / Web Preview Control Strip -->
+  <div class="w-full max-w-[960px] mb-0 sm:mb-3 px-3 py-2 bg-[#0b1326]/95 border-b sm:border border-[#222a3d] sm:rounded-2xl flex flex-wrap items-center justify-between gap-2 z-50">
+    <div class="flex items-center gap-2">
+      <span class="px-2 py-0.5 rounded bg-[#4cd7f6]/15 border border-[#4cd7f6]/30 font-mono text-[10px] font-bold text-[#4cd7f6] uppercase">STITCH PREVIEW</span>
+      <span class="text-xs font-semibold text-[#dae2fd]">GeoGIS6 Android — Interfaz Táctica Móvil (Prueba Temporal)</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="index.html" class="px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-bold bg-[#171f33] border border-[#2d3449] text-[#bcc9cd] hover:text-white">← Volver a Web</a>
+      <button id="toggle-frame-btn" type="button" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-bold bg-[#171f33] border border-[#2d3449] text-[#4cd7f6] hover:bg-[#222a3d]">
+        Pantalla Completa
+      </button>
+    </div>
+  </div>
+
+  <!-- Android Device Container -->
+  <div id="phone-shell" class="relative bg-[#0b1326] text-[#dae2fd] flex flex-col overflow-hidden select-none shadow-2xl w-full sm:w-[390px] h-[calc(100dvh-48px)] sm:h-[812px] sm:rounded-[34px] sm:border-[6px] sm:border-[#1e293b] sm:ring-1 sm:ring-[#4cd7f6]/25">
+    <!-- 1. COMPACT ANDROID HEADER & RTK TRAY -->
+    <header class="shrink-0 bg-[#0b1326]/95 backdrop-blur-xl border-b border-[#222a3d] z-30">
+      <div class="h-6 px-3.5 flex items-center justify-between font-mono text-[10px] text-[#bcc9cd] bg-[#060e20]">
+        <span class="font-semibold text-[#dae2fd]">GeoGIS6 Mobile · v6.0</span>
+        <div class="flex items-center gap-2">
+          <span class="text-[#4cd7f6] font-bold">5G+</span>
+          <span class="text-[#4edea3] font-bold">⚡ 94%</span>
+        </div>
+      </div>
+
+      <div class="h-12 px-3 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#4edea3]/15 border border-[#4edea3]/30 shrink-0">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#4edea3] animate-pulse"></span>
+            <span class="font-mono text-[9px] font-bold text-[#4edea3] uppercase">RTK FIX</span>
+          </div>
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-[#dae2fd] truncate leading-tight">PARCELA-09B · Adícora</div>
+            <div class="font-mono text-[9px] text-[#869397] truncate">RMS H:0.008m V:0.012m</div>
+          </div>
+        </div>
+
+        <button id="btn-toggle-dir" type="button" class="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#171f33] border border-[#2d3449] active:scale-95 transition-transform shrink-0">
+          <span class="text-[#ffb95f] font-mono text-[10px]">⇄</span>
+          <span id="dir-badge" class="font-mono text-[9px] font-bold text-[#4cd7f6]">PSAD56➔REGVEN</span>
+        </button>
+      </div>
+
+      <div class="px-3 py-1.5 bg-[#060e20] border-t border-[#171f33] flex items-center justify-between gap-1.5 font-mono text-[9px]">
+        <div class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#171f33]">
+          <span id="method-badge" class="text-[#4edea3] font-bold uppercase">RIGIDA02</span>
+          <span class="text-[#869397]">•</span>
+          <span id="huso-badge" class="text-[#4cd7f6] font-bold">19N</span>
+        </div>
+        <div class="text-[#dae2fd]">🛰 SV 28/32</div>
+        <div class="px-1.5 py-0.5 rounded bg-[#171f33]">
+          <span class="text-[#ffb95f] font-bold">PDOP</span>
+          <span class="text-[#dae2fd] font-bold">0.82</span>
+        </div>
+        <button id="btn-cycle-layer" type="button" class="px-1.5 py-0.5 rounded bg-[#222a3d] text-[#4cd7f6] font-bold uppercase truncate max-w-[96px]">Catastro Vector</button>
+      </div>
+    </header>
+
+    <!-- 2. MAIN SURVEY MAP CANVAS -->
+    <div class="relative flex-1 w-full bg-[#060e20] overflow-hidden">
+      <div id="map-backdrop" class="absolute inset-0 transition-all duration-300 bg-[#060e20]"></div>
+
+      <svg id="survey-svg" viewBox="0 0 360 440" preserveAspectRatio="xMidYMid slice" class="absolute inset-0 w-full h-full">
+        <defs>
+          <pattern id="utm-grid-android" width="60" height="60" patternUnits="userSpaceOnUse">
+            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#3d494c" stroke-opacity="0.35" stroke-dasharray="3 3" stroke-width="0.8" />
+            <circle cx="0" cy="0" r="1.4" fill="#4cd7f6" fill-opacity="0.5" />
+          </pattern>
+          <linearGradient id="poly-fill-android" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.22" />
+            <stop offset="100%" stop-color="#4edea3" stop-opacity="0.1" />
+          </linearGradient>
+        </defs>
+        <rect width="360" height="440" fill="url(#utm-grid-android)" />
+        <polygon id="parcel-poly" points="" fill="url(#poly-fill-android)" stroke="#4cd7f6" stroke-width="2.5" stroke-linejoin="round" />
+        <line id="base-line" x1="55" y1="245" x2="24" y2="375" stroke="#ffb95f" stroke-width="1.2" stroke-dasharray="4 3" stroke-opacity="0.7" />
+        <g id="vertices-layer"></g>
+      </svg>
+
+      <!-- Top-Left UTM HUD -->
+      <div id="utm-hud" class="absolute top-2.5 left-2.5 px-2 py-1 rounded bg-[#060e20]/85 border border-[#222a3d] font-mono text-[9px] text-[#bcc9cd] pointer-events-none tabular-nums">
+        N: — · E: —
+      </div>
+
+      <!-- Compass HUD -->
+      <div class="absolute top-2.5 right-16 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#131b2e]/90 border border-[#222a3d] backdrop-blur-md">
+        <span class="text-[#ffb95f] font-mono text-xs -rotate-12 inline-block">➤</span>
+        <div class="leading-none">
+          <div class="font-mono text-[9px] font-bold text-[#ffb95f]">AZ 012°28'W</div>
+          <div class="font-mono text-[8px] text-[#bcc9cd]">NORTE GEOD</div>
+        </div>
+      </div>
+
+      <!-- Central Parcel Summary Pill -->
+      <div class="absolute top-14 left-3 max-w-[190px] px-3 py-2 rounded-xl bg-[#171f33]/90 border border-[#4cd7f6]/25 backdrop-blur-md shadow-xl">
+        <div class="flex items-center gap-1 mb-0.5">
+          <span class="text-[#4cd7f6] font-mono text-[10px]">✔</span>
+          <span class="font-mono text-[9px] font-bold text-[#4cd7f6] uppercase tracking-wider">PARCELA-09B</span>
+        </div>
+        <div id="hud-area" class="text-sm font-bold text-[#dae2fd] leading-tight tabular-nums">— m²</div>
+        <div id="hud-perim" class="font-mono text-[9px] text-[#4edea3] mt-0.5 tabular-nums">— ha · Per: — m</div>
+      </div>
+
+      <!-- Scale Bar -->
+      <div class="absolute bottom-[138px] left-3 flex flex-col gap-0.5 pointer-events-none">
+        <div class="w-16 h-1 bg-[#bcc9cd]/70 rounded-full flex justify-between">
+          <div class="w-1.5 h-1.5 bg-[#4cd7f6] rounded-full"></div>
+          <div class="w-1.5 h-1.5 bg-[#4cd7f6] rounded-full"></div>
+        </div>
+        <span class="font-mono text-[8px] text-[#bcc9cd] font-bold">25 m · ESC 1:1,000</span>
+      </div>
+
+      <!-- Right-Edge Ergonomic Thumb-Zone FAB Stack -->
+      <div class="absolute top-12 right-2.5 z-20 flex flex-col items-center gap-2">
+        <button id="fab-capture" type="button" class="w-13 h-13 p-2.5 rounded-full bg-[#4cd7f6] hover:bg-[#acedff] active:scale-95 text-[#003640] shadow-xl shadow-[#4cd7f6]/25 flex flex-col items-center justify-center transition-all">
+          <span class="font-bold text-base leading-none">+</span>
+          <span class="font-mono text-[8px] font-extrabold uppercase leading-none mt-0.5">GRABAR</span>
+        </button>
+        <button id="fab-center" type="button" class="w-10 h-10 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#4cd7f6] hover:bg-[#222a3d] active:scale-90 shadow-lg flex items-center justify-center font-mono text-sm">⌖</button>
+        <button id="fab-imu" type="button" class="w-10 h-10 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#4edea3] hover:bg-[#222a3d] active:scale-90 shadow-lg flex flex-col items-center justify-center">
+          <span class="font-mono text-[9px] font-bold leading-none">IMU</span>
+          <span id="imu-tilt" class="font-mono text-[8px] font-bold leading-none mt-0.5">0.08°</span>
+        </button>
+        <button id="fab-measure" type="button" class="w-10 h-10 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#dae2fd] hover:bg-[#222a3d] active:scale-90 shadow-lg flex items-center justify-center font-mono text-xs">📐</button>
+        <button id="fab-layers" type="button" class="w-10 h-10 rounded-full bg-[#171f33]/95 border border-[#2d3449] text-[#dae2fd] hover:bg-[#222a3d] active:scale-90 shadow-lg flex items-center justify-center font-mono text-xs">▤</button>
+      </div>
+
+      <!-- 3. PULL-UP TOUCH BOTTOM SHEET -->
+      <div id="bottom-sheet" class="absolute inset-x-0 bottom-16 z-30 bg-[#131b2e]/97 backdrop-blur-2xl border-t border-[#2d3449] rounded-t-2xl shadow-[0_-10px_30px_rgba(0,0,0,0.65)] transition-all duration-300 flex flex-col h-[126px]">
+        <button id="sheet-handle-btn" type="button" class="w-full shrink-0 px-3.5 pt-2 pb-2 flex flex-col items-center border-b border-[#222a3d] text-left">
+          <div class="w-10 h-1 rounded-full bg-[#869397]/45 mb-2"></div>
+          <div class="w-full flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-2 h-2 rounded-full bg-[#4edea3] shrink-0"></span>
+              <span id="sheet-station-title" class="font-mono text-xs font-bold text-[#4cd7f6] truncate">V-05 [ROVER EST]</span>
+              <span id="sheet-pts-badge" class="px-1.5 py-0.5 rounded bg-[#4edea3]/15 font-mono text-[9px] font-bold text-[#4edea3] shrink-0">5 pts</span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span id="sheet-station-coords" class="font-mono text-[10px] text-[#bcc9cd] tabular-nums">—</span>
+              <span id="sheet-chevron" class="font-mono text-xs text-[#4cd7f6]">▲</span>
+            </div>
+          </div>
+        </button>
+
+        <div id="sheet-body" class="hidden flex-1 min-h-0 flex-col">
+          <div class="shrink-0 px-3 pt-2 pb-1.5 flex items-center gap-1.5 bg-[#0b1326]/70">
+            <button data-inner-tab="vertices" type="button" class="inner-tab-btn flex-1 py-1.5 px-2 rounded-lg text-[11px] font-semibold">Vértices</button>
+            <button data-inner-tab="qaqc" type="button" class="inner-tab-btn flex-1 py-1.5 px-2 rounded-lg text-[11px] font-semibold">Motor QA/QC</button>
+            <button data-inner-tab="export" type="button" class="inner-tab-btn flex-1 py-1.5 px-2 rounded-lg text-[11px] font-semibold">Exportar CAD</button>
+          </div>
+          <div id="tab-content-scroll" class="flex-1 overflow-y-auto px-3 py-2.5 space-y-3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. NATIVE ANDROID BOTTOM NAVIGATION BAR -->
+    <nav class="h-16 shrink-0 bg-[#060e20]/95 backdrop-blur-xl border-t border-[#171f33] z-40 flex items-center justify-around px-2">
+      <button data-nav-tab="map" type="button" class="nav-tab-btn flex flex-col items-center justify-center min-w-[64px] h-12">
+        <div class="nav-pill flex items-center justify-center w-9 h-6 rounded-full">🗺</div>
+        <span class="font-mono text-[9px] font-bold uppercase tracking-wider mt-0.5">Mapa</span>
+      </button>
+      <button data-nav-tab="vertices" type="button" class="nav-tab-btn flex flex-col items-center justify-center min-w-[64px] h-12">
+        <div class="nav-pill flex items-center justify-center w-9 h-6 rounded-full">📍</div>
+        <span class="font-mono text-[9px] font-bold uppercase tracking-wider mt-0.5">Vértices</span>
+      </button>
+      <button data-nav-tab="qaqc" type="button" class="nav-tab-btn flex flex-col items-center justify-center min-w-[64px] h-12">
+        <div class="nav-pill flex items-center justify-center w-9 h-6 rounded-full">🛡</div>
+        <span class="font-mono text-[9px] font-bold uppercase tracking-wider mt-0.5">QA/QC</span>
+      </button>
+      <button data-nav-tab="export" type="button" class="nav-tab-btn flex flex-col items-center justify-center min-w-[64px] h-12">
+        <div class="nav-pill flex items-center justify-center w-9 h-6 rounded-full">⬇</div>
+        <span class="font-mono text-[9px] font-bold uppercase tracking-wider mt-0.5">Exportar</span>
+      </button>
+    </nav>
+  </div>
+
+  <script type="module">
+    import { GeoEngine } from './js/geo-engine.js';
+
+    const state = {
+      fullscreen: false,
+      activeTab: 'map',
+      sheetHeight: 'peek',
+      layerMode: 'catastro',
+      method: 'rigida02',
+      direction: 'canoa_regven',
+      huso: 19,
+      selectedVertexId: 'V-05',
+      vertices: [
+        { id: 'V-01', este: 409662.26, norte: 1327653.22, z: 421.3, rms: 0.008, sx: 65, sy: 85 },
+        { id: 'V-02', este: 409740.42, norte: 1327663.6, z: 422.05, rms: 0.009, sx: 255, sy: 100 },
+        { id: 'V-03', este: 409775.24, norte: 1327612.14, z: 423.88, rms: 0.011, sx: 290, sy: 265 },
+        { id: 'V-04', este: 409719.96, norte: 1327557.28, z: 422.45, rms: 0.01, sx: 130, sy: 345 },
+        { id: 'V-05', este: 409650.78, norte: 1327584.86, z: 420.914, rms: 0.012, sx: 55, sy: 245 },
+      ],
+    };
+
+    const LAYER_LABELS = {
+      catastro: 'Catastro Vector',
+      satellite: 'Satélite HD',
+      hybrid: 'Híbrido Ortho',
+      dtm: 'LiDAR DTM',
+    };
+
+    function notify(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      clearTimeout(notify._t);
+      notify._t = setTimeout(() => el.classList.add('hidden'), 2600);
+    }
+
+    function transformVertex(v) {
+      const inv = state.direction === 'regven_canoa';
+      if (state.method === 'rigida02') {
+        const res = GeoEngine.transformRigida02(
+          [{ id: v.id, este: v.este, norte: v.norte, z: v.z }],
+          {
+            deltaEste: GeoEngine.RIGIDA02_DELTA_ESTE,
+            deltaNorte: GeoEngine.RIGIDA02_DELTA_NORTE,
+            cotaGeoidal: GeoEngine.RIGIDA02_COTA_GEOIDAL,
+            huso: state.huso,
+          },
+          inv
+        );
+        const r = res.resultados[0];
+        return { ...v, outEste: r.este, outNorte: r.norte, outCota: v.z || r.cota, lat: r.lat, lng: r.lng };
+      }
+      const r =
+        state.method === 'rigida'
+          ? GeoEngine.transformRigida(v.este, v.norte, v.z, state.huso, inv, 0, 0)
+          : GeoEngine.transformBadekas(v.este, v.norte, v.z, state.huso, inv);
+      return { ...v, outEste: r.este, outNorte: r.norte, outCota: v.z, lat: r.lat, lng: r.lng };
+    }
+
+    function render() {
+      const computed = state.vertices.map(transformVertex);
+      const stats = GeoEngine.calculatePolygonStats(
+        computed.map((v) => ({ id: v.id, este: v.outEste, norte: v.outNorte }))
+      );
+      const enriched = computed.map((v, idx) => ({
+        ...v,
+        rumbo: stats.legs[idx]?.rumbo || '—',
+        dist: stats.legs[idx]?.distancia || 0,
+      }));
+      const selected = enriched.find((v) => v.id === state.selectedVertexId) || enriched[enriched.length - 1];
+
+      // Header chips
+      document.getElementById('dir-badge').textContent =
+        state.direction === 'canoa_regven' ? 'PSAD56➔REGVEN' : 'REGVEN➔PSAD56';
+      document.getElementById('method-badge').textContent =
+        state.method === 'rigida02' ? 'RIGIDA02' : state.method === 'badekas' ? 'BADEKAS' : 'IDW';
+      document.getElementById('huso-badge').textContent = `${state.huso}N`;
+      document.getElementById('btn-cycle-layer').textContent = LAYER_LABELS[state.layerMode];
+
+      // Map backdrop
+      const backdrop = document.getElementById('map-backdrop');
+      backdrop.className =
+        'absolute inset-0 transition-all duration-300 ' +
+        (state.layerMode === 'satellite'
+          ? 'bg-[radial-gradient(circle_at_30%_25%,#1e3a2f_0%,#0b1d28_45%,#060e20_100%)] opacity-85'
+          : state.layerMode === 'hybrid'
+            ? 'bg-[radial-gradient(circle_at_60%_30%,#143040_0%,#0b1326_65%,#060e20_100%)] opacity-90'
+            : state.layerMode === 'dtm'
+              ? 'bg-[radial-gradient(circle_at_45%_45%,#2c1f10_0%,#131b2e_55%,#060e20_100%)] opacity-90'
+              : 'bg-[#060e20]');
+
+      // Polygon & Vertices
+      document.getElementById('parcel-poly').setAttribute(
+        'points',
+        enriched.map((v) => `${v.sx},${v.sy}`).join(' ')
+      );
+      const rover = enriched[enriched.length - 1];
+      document.getElementById('base-line').setAttribute('x1', String(rover.sx));
+      document.getElementById('base-line').setAttribute('y1', String(rover.sy));
+
+      const vLayer = document.getElementById('vertices-layer');
+      vLayer.innerHTML = enriched
+        .map((v, idx) => {
+          const isSel = v.id === selected.id;
+          const isRover = idx === enriched.length - 1;
+          return `
+            <g data-vid="${v.id}" class="cursor-pointer">
+              ${isRover ? `<circle cx="${v.sx}" cy="${v.sy}" r="16" fill="#4cd7f6" fill-opacity="0.16" />` : ''}
+              <circle cx="${v.sx}" cy="${v.sy}" r="${isSel ? 8 : 6}" fill="${isSel ? '#4edea3' : '#4cd7f6'}" fill-opacity="0.3" />
+              <circle cx="${v.sx}" cy="${v.sy}" r="${isSel ? 5 : 4}" fill="#0b1326" stroke="${isSel ? '#4edea3' : '#4cd7f6'}" stroke-width="2" />
+              <rect x="${v.sx + 8}" y="${v.sy - 12}" width="${isRover ? 56 : 34}" height="16" rx="3" fill="${isSel ? '#4cd7f6' : '#171f33'}" />
+              <text x="${v.sx + 12}" y="${v.sy - 1}" fill="${isSel ? '#003640' : '#4cd7f6'}" font-size="9" font-weight="700" font-family="monospace">${isRover ? `${v.id} [EST]` : v.id}</text>
+            </g>
+          `;
+        })
+        .join('');
+
+      vLayer.querySelectorAll('[data-vid]').forEach((el) => {
+        el.addEventListener('click', () => {
+          state.selectedVertexId = el.getAttribute('data-vid');
+          render();
+        });
+      });
+
+      // HUD metrics
+      document.getElementById('utm-hud').textContent = `N: ${selected.outNorte.toFixed(3)} · E: ${selected.outEste.toFixed(3)}`;
+      document.getElementById('hud-area').textContent = `${stats.areaM2.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m²`;
+      document.getElementById('hud-perim').textContent = `${stats.areaHa.toFixed(4)} ha · Per: ${stats.perimeter.toFixed(2)} m`;
+      document.getElementById('sheet-station-title').textContent = `${selected.id} [ROVER EST]`;
+      document.getElementById('sheet-pts-badge').textContent = `${enriched.length} pts`;
+      document.getElementById('sheet-station-coords').textContent = `${selected.outEste.toFixed(1)}E · ${selected.outNorte.toFixed(1)}N`;
+
+      // Bottom Sheet height & visibility
+      const sheet = document.getElementById('bottom-sheet');
+      const sheetBody = document.getElementById('sheet-body');
+      const chevron = document.getElementById('sheet-chevron');
+      sheet.classList.remove('h-[126px]', 'h-[54%]', 'h-[82%]');
+      if (state.sheetHeight === 'full') {
+        sheet.classList.add('h-[82%]');
+        chevron.textContent = '▼';
+      } else if (state.sheetHeight === 'mid') {
+        sheet.classList.add('h-[54%]');
+        chevron.textContent = '▲';
+      } else {
+        sheet.classList.add('h-[126px]');
+        chevron.textContent = '▲';
+      }
+      sheetBody.classList.toggle('hidden', state.sheetHeight === 'peek');
+      sheetBody.classList.toggle('flex', state.sheetHeight !== 'peek');
+
+      // Nav & Inner tab styling
+      document.querySelectorAll('.nav-tab-btn').forEach((btn) => {
+        const isAct = btn.getAttribute('data-nav-tab') === state.activeTab;
+        btn.classList.toggle('text-[#4cd7f6]', isAct);
+        btn.classList.toggle('font-bold', isAct);
+        btn.classList.toggle('text-[#bcc9cd]', !isAct);
+        btn.querySelector('.nav-pill').classList.toggle('bg-[#4cd7f6]/15', isAct);
+      });
+      document.querySelectorAll('.inner-tab-btn').forEach((btn) => {
+        const t = btn.getAttribute('data-inner-tab');
+        if (t === 'vertices') btn.textContent = `Vértices (${enriched.length})`;
+        const isAct = t === state.activeTab;
+        btn.classList.toggle('bg-[#222a3d]', isAct);
+        btn.classList.toggle('text-[#4cd7f6]', isAct);
+        btn.classList.toggle('font-bold', isAct);
+        btn.classList.toggle('text-[#bcc9cd]', !isAct);
+      });
+
+      // Sheet dynamic content
+      const scroll = document.getElementById('tab-content-scroll');
+      if (state.activeTab === 'vertices' || state.activeTab === 'map') {
+        scroll.innerHTML = `
+          <div class="grid grid-cols-2 gap-2">
+            <div class="p-2.5 rounded-xl bg-[#171f33] border border-[#222a3d]">
+              <span class="font-mono text-[9px] text-[#869397] uppercase block">SUPERFICIE</span>
+              <span class="font-mono text-sm font-bold text-[#4edea3] tabular-nums">${stats.areaM2.toFixed(2)} m²</span>
+              <span class="font-mono text-[9px] text-[#bcc9cd] block">${stats.areaHa.toFixed(4)} ha</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-[#171f33] border border-[#222a3d]">
+              <span class="font-mono text-[9px] text-[#869397] uppercase block">PERÍMETRO & CIERRE</span>
+              <span class="font-mono text-sm font-bold text-[#4cd7f6] tabular-nums">${stats.perimeter.toFixed(2)} m</span>
+              <span class="font-mono text-[9px] text-[#4edea3] block">Error: 0.003 m · 1:114,556</span>
+            </div>
+          </div>
+          <button id="btn-inner-capture" type="button" class="w-full py-2.5 px-3 rounded-xl bg-[#4cd7f6] text-[#003640] font-bold text-xs">+ Capturar / Agregar Nuevo Vértice RTK</button>
+          <div class="space-y-2">
+            ${enriched
+              .map(
+                (v) => `
+              <button type="button" data-card-vid="${v.id}" class="w-full text-left p-2.5 rounded-xl border ${v.id === selected.id ? 'bg-[#222a3d] border-[#4cd7f6]/50' : 'bg-[#171f33]/80 border-[#222a3d]'}">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="font-mono text-xs font-bold text-[#4cd7f6]">${v.id} <span class="text-[#ffb95f] font-normal">${v.rumbo} · ${v.dist.toFixed(2)}m</span></span>
+                  <span class="px-1.5 py-0.5 rounded bg-[#4edea3]/15 font-mono text-[9px] font-bold text-[#4edea3]">FIXED ±${v.rms.toFixed(3)}m</span>
+                </div>
+                <div class="grid grid-cols-3 gap-1.5 bg-[#060e20] p-2 rounded-lg font-mono text-[11px] tabular-nums">
+                  <div><span class="text-[8px] text-[#869397] block">ESTE (X)</span><span class="font-bold">${v.outEste.toFixed(3)}</span></div>
+                  <div><span class="text-[8px] text-[#869397] block">NORTE (Y)</span><span class="font-bold">${v.outNorte.toFixed(3)}</span></div>
+                  <div><span class="text-[8px] text-[#869397] block">COTA (Z)</span><span class="text-[#ffb95f] font-bold">${v.outCota.toFixed(3)}m</span></div>
+                </div>
+              </button>
+            `
+              )
+              .join('')}
+          </div>
+        `;
+        document.getElementById('btn-inner-capture')?.addEventListener('click', capturePoint);
+        scroll.querySelectorAll('[data-card-vid]').forEach((el) => {
+          el.addEventListener('click', () => {
+            state.selectedVertexId = el.getAttribute('data-card-vid');
+            render();
+          });
+        });
+      } else if (state.activeTab === 'qaqc') {
+        scroll.innerHTML = `
+          <div class="p-3 rounded-xl bg-[#171f33] border border-[#222a3d] space-y-2.5">
+            <div class="text-[10px] font-mono font-bold text-[#869397] uppercase">Dirección</div>
+            <div class="grid grid-cols-2 gap-1.5 bg-[#060e20] p-1 rounded-xl">
+              <button data-set-dir="canoa_regven" class="py-2 rounded-lg font-mono text-[10px] font-bold ${state.direction === 'canoa_regven' ? 'bg-[#4cd7f6] text-[#003640]' : 'text-[#bcc9cd]'}">PSAD56 ➔ REGVEN</button>
+              <button data-set-dir="regven_canoa" class="py-2 rounded-lg font-mono text-[10px] font-bold ${state.direction === 'regven_canoa' ? 'bg-[#4cd7f6] text-[#003640]' : 'text-[#bcc9cd]'}">REGVEN ➔ PSAD56</button>
+            </div>
+            <div class="text-[10px] font-mono font-bold text-[#869397] uppercase">Motor Geodésico</div>
+            <div class="grid grid-cols-3 gap-1.5 bg-[#060e20] p-1 rounded-xl">
+              <button data-set-method="rigida02" class="py-2 rounded-lg font-mono text-[10px] font-bold ${state.method === 'rigida02' ? 'bg-[#4edea3] text-[#003824]' : 'text-[#bcc9cd]'}">RIGIDA02</button>
+              <button data-set-method="badekas" class="py-2 rounded-lg font-mono text-[10px] font-bold ${state.method === 'badekas' ? 'bg-[#4edea3] text-[#003824]' : 'text-[#bcc9cd]'}">Badekas 3D</button>
+              <button data-set-method="rigida" class="py-2 rounded-lg font-mono text-[10px] font-bold ${state.method === 'rigida' ? 'bg-[#4edea3] text-[#003824]' : 'text-[#bcc9cd]'}">Rígida IDW</button>
+            </div>
+            <div class="text-[10px] font-mono font-bold text-[#869397] uppercase">Huso UTM Venezuela</div>
+            <div class="grid grid-cols-4 gap-1.5">
+              ${[18, 19, 20, 21]
+                .map(
+                  (h) =>
+                    `<button data-set-huso="${h}" class="py-1.5 rounded-lg font-mono text-xs font-bold border ${state.huso === h ? 'bg-[#4cd7f6]/20 border-[#4cd7f6] text-[#4cd7f6]' : 'bg-[#060e20] border-[#222a3d] text-[#bcc9cd]'}">${h}N</button>`
+                )
+                .join('')}
+            </div>
+          </div>
+          <div class="p-3 rounded-xl bg-[#171f33] border border-[#4edea3]/30 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[10px] font-bold text-[#4edea3] uppercase">Dictamen QA/QC IGVSB</span>
+              <span class="px-2 py-0.5 rounded bg-[#4edea3]/15 font-mono text-[9px] font-bold text-[#4edea3]">INVARIANCIA ≤ 0.001 m</span>
+            </div>
+            <button id="btn-verify-rigidez" type="button" class="w-full py-2 rounded-lg bg-[#222a3d] text-[#4cd7f6] font-mono text-[11px] font-bold">✔ Verificar Consistencia Topológica</button>
+          </div>
+        `;
+        scroll.querySelectorAll('[data-set-dir]').forEach((b) => b.addEventListener('click', () => { state.direction = b.getAttribute('data-set-dir'); render(); }));
+        scroll.querySelectorAll('[data-set-method]').forEach((b) => b.addEventListener('click', () => { state.method = b.getAttribute('data-set-method'); render(); }));
+        scroll.querySelectorAll('[data-set-huso]').forEach((b) => b.addEventListener('click', () => { state.huso = Number(b.getAttribute('data-set-huso')); render(); }));
+        document.getElementById('btn-verify-rigidez')?.addEventListener('click', () => notify('QA/QC IGVSB Aprobado · ΔDistancia ≤ 0.001 m'));
+      } else {
+        scroll.innerHTML = `
+          <div class="space-y-2.5">
+            <button id="btn-exp-dxf" type="button" class="w-full p-3 rounded-xl bg-[#4cd7f6] text-[#003640] flex items-center justify-between text-left">
+              <div><div class="text-xs font-bold">Descargar .DXF (CivilCAD v2024)</div><div class="text-[10px] opacity-80">Capas poligonal, vértices y cuadro UTM</div></div>
+              <span class="font-mono font-bold text-sm">⬇</span>
+            </button>
+            <button id="btn-exp-copy" type="button" class="w-full p-3 rounded-xl bg-[#171f33] border border-[#2d3449] flex items-center justify-between text-left">
+              <div><div class="text-xs font-bold">Copiar CivilCAD (P,E,N,Z,D)</div><div class="text-[10px] text-[#bcc9cd]">Portapapeles inmediato</div></div>
+              <span class="font-mono font-bold text-xs text-[#4edea3]">COPIAR</span>
+            </button>
+            <button id="btn-exp-pdf" type="button" class="w-full p-3 rounded-xl bg-[#171f33] border border-[#2d3449] flex items-center justify-between text-left">
+              <div><div class="text-xs font-bold">Memoria Descriptiva PDF</div><div class="text-[10px] text-[#bcc9cd]">Modelo Catastro R-2024</div></div>
+              <span class="font-mono text-[9px] font-bold px-2 py-0.5 rounded bg-[#ffb95f]/20 text-[#ffb95f]">R-2024</span>
+            </button>
+          </div>
+        `;
+        document.getElementById('btn-exp-dxf')?.addEventListener('click', () => {
+          const dxf = GeoEngine.generateDXF(
+            enriched.map((v) => ({ id: v.id, este: v.outEste, norte: v.outNorte, cota: v.outCota })),
+            { datum: state.direction === 'canoa_regven' ? 'SIRGAS-REGVEN' : 'PSAD56 LA CANOA', huso: state.huso }
+          );
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([dxf], { type: 'application/dxf' }));
+          a.download = `PARCELA_09B_Huso${state.huso}N.dxf`;
+          a.click();
+          notify('Archivo DXF descargado');
+        });
+        document.getElementById('btn-exp-copy')?.addEventListener('click', async () => {
+          const txt = GeoEngine.generateCivilCAD(enriched.map((v) => ({ id: v.id, este: v.outEste, norte: v.outNorte, cota: v.outCota, descripcion: 'PARCELA-09B' })));
+          try { await navigator.clipboard.writeText(txt); } catch {}
+          notify('Coordenadas P,E,N,Z,D copiadas');
+        });
+        document.getElementById('btn-exp-pdf')?.addEventListener('click', () => notify('Memoria Descriptiva R-2024 generada'));
+      }
+    }
+
+    function capturePoint() {
+      const nextNum = state.vertices.length + 1;
+      const id = `V-${String(nextNum).padStart(2, '0')}`;
+      const last = state.vertices[state.vertices.length - 1];
+      const first = state.vertices[0];
+      state.vertices.push({
+        id,
+        este: Math.round((((last.este + first.este) / 2) - 8.5 + (nextNum % 3) * 4.2) * 1000) / 1000,
+        norte: Math.round((((last.norte + first.norte) / 2) + 6.3 - (nextNum % 2) * 3.1) * 1000) / 1000,
+        z: Math.round((420.5 + nextNum * 0.14) * 1000) / 1000,
+        rms: 0.008,
+        sx: Math.round(Math.max(42, Math.min(285, (last.sx + first.sx) / 2 - 14))),
+        sy: Math.round(Math.max(70, Math.min(340, (last.sy + first.sy) / 2 + 12))),
+      });
+      state.selectedVertexId = id;
+      notify(`Punto ${id} grabado con RTK FIXED (±0.008 m)`);
+      render();
+    }
+
+    function selectTab(tab) {
+      state.activeTab = tab;
+      state.sheetHeight = tab === 'map' ? 'peek' : state.sheetHeight === 'peek' ? 'mid' : state.sheetHeight;
+      render();
+    }
+
+    document.getElementById('toggle-frame-btn').addEventListener('click', () => {
+      state.fullscreen = !state.fullscreen;
+      const shell = document.getElementById('phone-shell');
+      const btn = document.getElementById('toggle-frame-btn');
+      if (state.fullscreen) {
+        shell.className = 'relative bg-[#0b1326] text-[#dae2fd] flex flex-col overflow-hidden select-none shadow-2xl w-full max-w-[1100px] h-[calc(100dvh-68px)] sm:rounded-2xl border border-[#222a3d]';
+        btn.textContent = 'Marco Celular (390×844)';
+      } else {
+        shell.className = 'relative bg-[#0b1326] text-[#dae2fd] flex flex-col overflow-hidden select-none shadow-2xl w-full sm:w-[390px] h-[calc(100dvh-48px)] sm:h-[812px] sm:rounded-[34px] sm:border-[6px] sm:border-[#1e293b] sm:ring-1 sm:ring-[#4cd7f6]/25';
+        btn.textContent = 'Pantalla Completa';
+      }
+    });
+
+    document.getElementById('btn-toggle-dir').addEventListener('click', () => {
+      state.direction = state.direction === 'canoa_regven' ? 'regven_canoa' : 'canoa_regven';
+      render();
+    });
+
+    function cycleLayer() {
+      const order = ['catastro', 'satellite', 'hybrid', 'dtm'];
+      state.layerMode = order[(order.indexOf(state.layerMode) + 1) % order.length];
+      notify(`Capa activa: ${LAYER_LABELS[state.layerMode]}`);
+      render();
+    }
+    document.getElementById('btn-cycle-layer').addEventListener('click', cycleLayer);
+    document.getElementById('fab-layers').addEventListener('click', cycleLayer);
+    document.getElementById('fab-capture').addEventListener('click', capturePoint);
+    document.getElementById('fab-center').addEventListener('click', () => {
+      state.selectedVertexId = state.vertices[state.vertices.length - 1].id;
+      notify('Centrado en estación rover activa');
+      render();
+    });
+    document.getElementById('fab-imu').addEventListener('click', () => notify('Nivel Electrónico IMU: 0.08° (En tolerancia)'));
+    document.getElementById('fab-measure').addEventListener('click', () => selectTab('vertices'));
+
+    document.getElementById('sheet-handle-btn').addEventListener('click', () => {
+      state.sheetHeight = state.sheetHeight === 'peek' ? 'mid' : state.sheetHeight === 'mid' ? 'full' : 'peek';
+      render();
+    });
+
+    document.querySelectorAll('.nav-tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => selectTab(btn.getAttribute('data-nav-tab')));
+    });
+    document.querySelectorAll('.inner-tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.activeTab = btn.getAttribute('data-inner-tab');
+        render();
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>
