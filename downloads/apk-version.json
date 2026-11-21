@@ -1,9 +1,9 @@
 {
-  "versionCode": 609,
-  "versionName": "6.0.9",
-  "buildNumber": 9,
-  "publishedAt": "2026-11-20T17:40:32.620088+00:00",
+  "versionCode": 610,
+  "versionName": "6.0.10",
+  "buildNumber": 10,
+  "publishedAt": "2026-11-21T19:48:27.864546+00:00",
   "downloadUrl": "https://github.com/akey01/GeoGis_Android/releases/latest/download/GeoGis6_Android.apk",
   "releaseApiUrl": "https://api.github.com/repos/akey01/GeoGis_Android/releases/latest",
-  "notes": "Compilación v6.0.9 (Build 609): Parcelas Desktop, Proyectos PostgreSQL/Local, Login Integrado y Auto-Update OTA."
+  "notes": "GeoGIS6 Mobile v6.0.10 (Build 610): 5 pantallas Stitch nativas activas por defecto (Auth/Proyectos, Mapa, Parcela, Localización RTK/AR y Satélites GNSS) compiladas con Next.js output:export."
 }
